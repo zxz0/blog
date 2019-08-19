@@ -1,0 +1,29 @@
+# Jekyll configuration
+
+name: zxz0
+description: Welcome to zxz0！
+
+# url is currently only used only for the RSS feed in feed.xml
+url: https://github.com/zxixia/blog
+
+# baseurl will often be '', but for a project page on gh-pages, it needs to
+# be the project name.
+# *** IMPORTANT: If your local "jekyll serve" throws errors change this to '' or
+#     run it like so: jekyll serve --baseurl=''
+baseurl: '/blog'
+## default date_format
+date_format: 
+  title: "%m/%d/%Y"
+  archive: "%b"
+  categories: "%m/%Y"
+  tag: "%m/%Y"
+# Language
+lan: "en" 
+
+paginate: 10
+
+highlighter: rouge
+markdown: kramdown
+plugins: ['jekyll-paginate']
+
+exclude: ['README.md', 'LICENSE', "*.bak"]

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>zxz0</title>
+		<description>Welcome to zxz0！</description>
+		<link>http://localhost:4000/blog</link>
+		<atom:link href="http://localhost:4000/blog/feed.xml" rel="self" type="application/rss+xml" />
+		
+			<item>
+				<title>Hello, world!</title>
+				<description>&lt;h1 id=&quot;some-heading&quot;&gt;some heading&lt;/h1&gt;
+
+&lt;p&gt;This is my first post.&lt;/p&gt;
+
+&lt;p&gt;Thanks to [How to Create a Blog with Jekyll and GitHub Page], [Greating your blog for free using Jekyll + Github pages], [Jeckll], [Failed to load resources with Jekyll on a Github page].&lt;/p&gt;
+
+&lt;p&gt;[//]: 
+    [How to Create a Blog with Jekyll and GitHub Page]: &lt;a href=&quot;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&quot;&gt;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&lt;/a&gt;
+    [Greating your blog for free using Jekyll + Github pages]:&lt;a href=&quot;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&quot;&gt;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&lt;/a&gt;
+    [Jeckll]: &lt;a href=&quot;https://jekyllcn.com&quot;&gt;https://jekyllcn.com&lt;/a&gt;
+    [Failed to load resources with Jekyll on a Github page]: &lt;a href=&quot;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&quot;&gt;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Mon, 19 Aug 2019 00:27:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/other/2019/08/19/hello-world.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/other/2019/08/19/hello-world.html</guid>
+			</item>
+		
+	</channel>
+</rss>
