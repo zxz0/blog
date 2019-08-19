@@ -12,13 +12,7 @@
 
 &lt;p&gt;This is my first post.&lt;/p&gt;
 
-&lt;p&gt;Thanks to [How to Create a Blog with Jekyll and GitHub Page], [Greating your blog for free using Jekyll + Github pages], [Jeckll], [Failed to load resources with Jekyll on a Github page].&lt;/p&gt;
-
-&lt;p&gt;[//]: 
-    [How to Create a Blog with Jekyll and GitHub Page]: &lt;a href=&quot;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&quot;&gt;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&lt;/a&gt;
-    [Greating your blog for free using Jekyll + Github pages]:&lt;a href=&quot;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&quot;&gt;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&lt;/a&gt;
-    [Jeckll]: &lt;a href=&quot;https://jekyllcn.com&quot;&gt;https://jekyllcn.com&lt;/a&gt;
-    [Failed to load resources with Jekyll on a Github page]: &lt;a href=&quot;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&quot;&gt;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Thanks to &lt;a href=&quot;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&quot;&gt;How to Create a Blog with Jekyll and GitHub Page&lt;/a&gt;, &lt;a href=&quot;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&quot;&gt;Greating your blog for free using Jekyll + Github pages&lt;/a&gt;, &lt;a href=&quot;https://jekyllcn.com&quot;&gt;Jeckll&lt;/a&gt;, &lt;a href=&quot;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&quot;&gt;Failed to load resources with Jekyll on a Github page&lt;/a&gt;, &lt;a href=&quot;https://24ways.org/2013/get-started-with-github-pages/&quot;&gt;Get Started With GitHub Pages (Plus Bonus Jekyll)&lt;/a&gt;, &lt;a href=&quot;https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages&quot;&gt;Configuring a publishing source for GitHub Pages&lt;/a&gt;.&lt;/p&gt;
 </description>
 				<pubDate>Mon, 19 Aug 2019 00:27:00 -0700</pubDate>
 				<link>http://localhost:4000/blog/other/2019/08/19/hello-world.html</link>
