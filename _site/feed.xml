@@ -7,6 +7,152 @@
 		<atom:link href="http://localhost:4000/blog/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>GitLab设置SSH key，以及相关知识</title>
+				<description>&lt;h1 id=&quot;gitlab设置ssh-key在本地已有ssh-key的情况下&quot;&gt;GitLab设置SSH key（在本地已有SSH key的情况下）&lt;/h1&gt;
+&lt;p&gt;环境：macOS 10.14.6
+（因为是Mac，所以预装了OpenSSH client。Windows得先装这个再进行以下操作）&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;生成SSH key：
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ssh-keygen &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; ed25519 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ul&gt;
+      &lt;li&gt;ed25519这个数字签名算法是最安全，performance最好的（验证、签名、key生成的速度都快，签名公钥都很小）。如果server支持就用尽量这个。&lt;/li&gt;
+      &lt;li&gt;默认且最常用的是RSA。推荐加上-b 4096参数生成4096 bits的key；旧的RSA不安全（仅一轮MD5 hash），推荐在6.5版本之后，加上-o用新方法encode。
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ssh-keygen &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; rsa &lt;span class=&quot;nt&quot;&gt;-b&lt;/span&gt; 4096 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+      &lt;li&gt;-C 参数是comment，可不写&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;在被保存SSH key的file的时候，不要用之前GitHub重复的文件（或者说，任何已有的SSH key的文件，否则之前的就会被覆盖 or 退出）。
+    &lt;ul&gt;
+      &lt;li&gt;默认名字是id_签名算法。如果之前是一路enter，那么就是id_rsa&lt;/li&gt;
+      &lt;li&gt;最好保持路径一样：在默认文件夹：~/.ssh下&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;在被问password（passphrase）的时候，为了安全，可以使用。这是为了在本机硬盘上保护私钥。&lt;/li&gt;
+  &lt;li&gt;后台启动ssh-agent，将 SSH 私钥添加到 ssh-agent 并将密码存储在密钥链中：
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;eval&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ssh-agent &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+ ssh-add ~/.ssh/new_ssh_key
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;创建/修改配置文件，保证本机能够根据host选择对应的私钥：
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; vim ~/.ssh/config
+ &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+ &lt;span class=&quot;c&quot;&gt;# GitHub&lt;/span&gt;
+ Host github.com
+   Preferredauthentications publickey
+   IdentityFile ~/.ssh/id_rsa
+
+ &lt;span class=&quot;c&quot;&gt;# Private GitLab instance&lt;/span&gt;
+ Host gitlab.company.com
+   Preferredauthentications publickey
+   IdentityFile ~/.ssh/new_ssh_key
+ &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;esc + : + wq&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;如果之前有使用密码保护私钥，可以用UseKeychain yes设置直接使用keychain，从而不用每次都输passphrase。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;复制公钥到剪切板：
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; pbcopy &amp;lt; ~/.ssh/new_ssh_key.pub
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ul&gt;
+      &lt;li&gt;如果手动copy，要注意copy所有内容：以ssh-ed25519 / ssh-rsa开始，以使用的email结尾。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;添加公钥到远程服务器：
+    &lt;ul&gt;
+      &lt;li&gt;大概有可以用的图形界面（GitLab: setting - SSH Keys - Key）&lt;/li&gt;
+      &lt;li&gt;如果生成的时候用了-C，那么注释会出现在Title下。如果没有？写个好辨认的title，比如，home，或者Work Laptop。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;验证一下之前的SSH key没有被破坏（此处是GitHub），以及新的SSH key是否添加成功
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ssh &lt;span class=&quot;nt&quot;&gt;-T&lt;/span&gt; git@github.com
+ ssh &lt;span class=&quot;nt&quot;&gt;-T&lt;/span&gt; git@gitlab.company.com
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ul&gt;
+      &lt;li&gt;可以加参数-v看到详细验证过程&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;相关背景知识&quot;&gt;相关背景知识&lt;/h1&gt;
+&lt;h2 id=&quot;ssh&quot;&gt;SSH&lt;/h2&gt;
+&lt;p&gt;用于加密登陆的网络协议（即使被截获，内容也不会泄露），有多种实现。主要用于远程登录（safely administering remote servers）。在2个party间建立安全的连接，互相验证，传递commands和output。&lt;/p&gt;
+
+&lt;h2 id=&quot;ssh工作流程&quot;&gt;SSH工作流程：&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;建立安全信道：此处使用对称加密（双方共享一个key，用于加密和解密；或者一堆关系简单可以推导的key）。
+    &lt;ul&gt;
+      &lt;li&gt;无论用那种验证方法，都要先建立安全信道&lt;/li&gt;
+      &lt;li&gt;这个key是sesson-base，用于保证之后所有的传输的安全&lt;/li&gt;
+      &lt;li&gt;可以设置使用不同的symmetrical cipher systems：client有个preference list，最后双方共同选择的是，client的list上尽量靠前的，server也支持的。&lt;/li&gt;
+      &lt;li&gt;大概过程是：
+        &lt;ol&gt;
+          &lt;li&gt;双方共享一个大质数；&lt;/li&gt;
+          &lt;li&gt;双方约定encryption generator (eg. AES)；&lt;/li&gt;
+          &lt;li&gt;双方各自决定一个秘密的质数，当作私钥；&lt;/li&gt;
+          &lt;li&gt;使用这个私钥，还有约定好的相同的encryption generator，和共享的大质数生成公钥。这个公钥可以随意公开，并且公钥无法推导出对应的私钥；&lt;/li&gt;
+          &lt;li&gt;双方交换公钥；&lt;/li&gt;
+          &lt;li&gt;各方有自己的私钥和对方的公钥，以及一开始共享的大质数，可以计算出一个shared secret key。双方各自计算，但是结果是一样的。&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+      &lt;li&gt;最后得到的共同的secret key就是上面所说的sesson-based key，用于双方加密解密接下来的通信&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;验证用户：使用非对称加密（单方向发送数据需要一对associated key：公钥可以随意分享，用于加密；私钥用于解密对应公钥加密的内容。）
+    &lt;ul&gt;
+      &lt;li&gt;用户名密码：传统方法，像普通的计算机登陆。密码被加密后传送，但是长度有限，可以暴力破解。&lt;/li&gt;
+      &lt;li&gt;SSH key：更安全。
+        &lt;ul&gt;
+          &lt;li&gt;client生成一对key pair。&lt;/li&gt;
+          &lt;li&gt;server存公钥（加密），client都有（私钥解密）。&lt;/li&gt;
+          &lt;li&gt;server通过验证client有对应私钥验证client身份。&lt;/li&gt;
+          &lt;li&gt;client通过第一次连接的时候获取的fingerprint人工手工验证server，只要这个fingerprint不变化，就不会再bother到人（或者在config文件中设置StrickHostKeyChecking no，自动把新的host加入known_hosts，否则第一次连接的时候会询问；UserKnownHostsFile /dev/null，不警告新的或者fingerprint变化的host。）&lt;/li&gt;
+          &lt;li&gt;具体验证过程：
+            &lt;ol&gt;
+              &lt;li&gt;client发送自己的key pair的ID给server；&lt;/li&gt;
+              &lt;li&gt;server在对应用户目录下的~/.authorized_keys中查找到对应的公钥；&lt;/li&gt;
+              &lt;li&gt;如果found，server生成随机数字，用公钥加密；&lt;/li&gt;
+              &lt;li&gt;server发送这个加密后的信息（当然，要使用先前建立好的安全信道，所以还有一道加密。不过这个相当于当前layer下的一层了，可以当作透明，不考虑）；&lt;/li&gt;
+              &lt;li&gt;client如果有对应的私钥，就可以成功解密，得到original number；&lt;/li&gt;
+              &lt;li&gt;client结合解密后的数字，以及shared session key，计算出MD5值；&lt;/li&gt;
+              &lt;li&gt;client发送这个MD5值到server，作为答案；&lt;/li&gt;
+              &lt;li&gt;server一样使用shared session key，和自己有的original number计算MD5值。如果一样，则认为client有provate key，验证成功。&lt;/li&gt;
+            &lt;/ol&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;另外，还会使用hash保证data integrity。&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;h3 id=&quot;参考资料&quot;&gt;参考资料：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://xuyuan923.github.io/2014/11/04/github-gitlab-ssh/&quot;&gt;github/gitlab同时管理多个ssh key&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.jianshu.com/p/b9f686dfbdb2&quot;&gt;github和gitlab公用，ssh key 配置&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://help.github.com/cn/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key&quot;&gt;生成新 SSH 密钥并添加到 ssh-agent&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gitlab.com/help/ssh/README#types-of-ssh-keys-and-which-to-choose&quot;&gt;GitLab and SSH keys&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process&quot;&gt;Understanding the SSH Encryption and Connection Process&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server&quot;&gt;How To Configure SSH Key-Based Authentication on a Linux Server&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html&quot;&gt;SSH原理与运用（一）：远程登录&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/gavincoder/p/10054532.html&quot;&gt;Git连接GitLab远程仓库&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys&quot;&gt;SSH Essentials: Working with SSH Servers, Clients, and Keys&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server&quot;&gt;How To Configure SSH Key-Based Authentication on a Linux Server&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process&quot;&gt;Understanding the SSH Encryption and Connection Process&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/qq_40870418/article/details/78829769&quot;&gt;Diffie-Hellman密钥是如何交换的&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Tue, 10 Sep 2019 10:42:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</guid>
+			</item>
+		
+			<item>
 				<title>Hello, world!</title>
 				<description>&lt;h1 id=&quot;some-heading&quot;&gt;some heading&lt;/h1&gt;
 
