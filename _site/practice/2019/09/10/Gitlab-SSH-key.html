@@ -135,7 +135,7 @@
         <hr style="border-top:1px solid #28323C;"/>
     
     <div class="post-content">
-    <h1 id="gitlab设置ssh-key在本地已有ssh-key的情况下">GitLab设置SSH key（在本地已有SSH key的情况下）</h1>
+    <h3 id="gitlab设置ssh-key在本地已有ssh-key的情况下">GitLab设置SSH key（在本地已有SSH key的情况下）</h3>
 <p>环境：macOS 10.14.6
 （因为是Mac，所以预装了OpenSSH client。Windows得先装这个再进行以下操作）</p>
 <ol>
@@ -204,11 +204,11 @@
 
 <hr />
 
-<h1 id="相关背景知识">相关背景知识</h1>
-<h2 id="ssh">SSH</h2>
+<h3 id="相关背景知识">相关背景知识</h3>
+<h4 id="ssh">SSH</h4>
 <p>用于加密登陆的网络协议（即使被截获，内容也不会泄露），有多种实现。主要用于远程登录（safely administering remote servers）。在2个party间建立安全的连接，互相验证，传递commands和output。</p>
 
-<h2 id="ssh工作流程">SSH工作流程：</h2>
+<h4 id="ssh工作流程">SSH工作流程：</h4>
 <ol>
   <li>建立安全信道：此处使用对称加密（双方共享一个key，用于加密和解密；或者一堆关系简单可以推导的key）。
     <ul>
@@ -258,7 +258,7 @@
 <p>另外，还会使用hash保证data integrity。</p>
 
 <hr />
-<h3 id="参考资料">参考资料：</h3>
+<h4 id="参考资料">参考资料：</h4>
 <ul>
   <li><a href="https://xuyuan923.github.io/2014/11/04/github-gitlab-ssh/">github/gitlab同时管理多个ssh key</a></li>
   <li><a href="https://www.jianshu.com/p/b9f686dfbdb2">github和gitlab公用，ssh key 配置</a></li>

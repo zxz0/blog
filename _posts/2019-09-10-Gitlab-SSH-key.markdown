@@ -6,7 +6,7 @@ categories: Practice
 tags: Security SSH GitLab GitHub Practice
 description: 已有GitHub的SSH key的情况下，新增GitLab的SSH key，以及一些SSH的相关背景知识
 ---
-# GitLab设置SSH key（在本地已有SSH key的情况下）
+### GitLab设置SSH key（在本地已有SSH key的情况下）
 环境：macOS 10.14.6
 （因为是Mac，所以预装了OpenSSH client。Windows得先装这个再进行以下操作）
 1. 生成SSH key：
@@ -61,11 +61,11 @@ description: 已有GitHub的SSH key的情况下，新增GitLab的SSH key，以�
 
 ---
 
-# 相关背景知识
-## SSH
+### 相关背景知识
+#### SSH
 用于加密登陆的网络协议（即使被截获，内容也不会泄露），有多种实现。主要用于远程登录（safely administering remote servers）。在2个party间建立安全的连接，互相验证，传递commands和output。
 
-## SSH工作流程：
+#### SSH工作流程：
 1. 建立安全信道：此处使用对称加密（双方共享一个key，用于加密和解密；或者一堆关系简单可以推导的key）。
     - 无论用那种验证方法，都要先建立安全信道
     - 这个key是sesson-base，用于保证之后所有的传输的安全
@@ -98,7 +98,7 @@ description: 已有GitHub的SSH key的情况下，新增GitLab的SSH key，以�
 另外，还会使用hash保证data integrity。
 
 ---
-### 参考资料：
+#### 参考资料：
 - [github/gitlab同时管理多个ssh key](https://xuyuan923.github.io/2014/11/04/github-gitlab-ssh/)
 - [github和gitlab公用，ssh key 配置](https://www.jianshu.com/p/b9f686dfbdb2)
 - [生成新 SSH 密钥并添加到 ssh-agent](https://help.github.com/cn/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key)
