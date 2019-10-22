@@ -244,6 +244,70 @@ Python内的变量作用域，最小是以函数为单位。
 			</item>
 		
 			<item>
+				<title>matlab Floyd最短路计算</title>
+				<description>&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;clear&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;clc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;31&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;zeros&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;n&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,2&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;124&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,3&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;187&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,4&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;182&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;1.5&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+...
+a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;29,30&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;68&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;2&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;29,31&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;41&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;2&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;a+a&lt;span class=&quot;s1&quot;&gt;'; M=max(max(a))*n^2; %M为充分大的正实数
+a=a+((a==0)-eye(n))*M;
+path=zeros(n);
+b=a;
+ccase=xlsread('&lt;/span&gt;各地区累计病例.xls&lt;span class=&quot;s1&quot;&gt;');
+for i=1:n
+  b(:,i)=b(:,i)*ccase(i);
+end
+%a, path
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;计算所有点之间的最短距离，存于a，路径存于path。&lt;/p&gt;
+</description>
+				<pubDate>Sun, 08 Feb 2015 22:17:55 +0800</pubDate>
+				<link>http://localhost:4000/blog/algorithm/2015/02/08/matlab-Floyd.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/algorithm/2015/02/08/matlab-Floyd.html</guid>
+			</item>
+		
+			<item>
+				<title>Linux下firefox安装</title>
+				<description>&lt;p&gt;转为root，&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;firefox
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;但是随即出现问题：
+(firefox:4871): GnomeUI-WARNING **: While connecting to session manager:
+None of the authentication protocols specified are supported.&lt;/p&gt;
+
+&lt;p&gt;/usr/lib/firefox/firefox: symbol lookup error: /usr/lib/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest&lt;/p&gt;
+
+&lt;p&gt;yum真不是个好东西。。。&lt;/p&gt;
+
+&lt;p&gt;google被墙，百度找不到，辗转到yahoo日本去找。&lt;/p&gt;
+
+&lt;p&gt;找到：
+&lt;a href=&quot;https://www.nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)&quot;&gt;Problem With VNC refreshing (Centos 6.2) - nixCraft Linux / UNIX …&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;/usr/bin/gnome-session: symbol lookup error: /usr/lib64/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest (nautilus:17444): EggSMClient-WARNING **: Failed to connect to the session manager: IO error occured opening …
+地址：http://nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)&lt;/p&gt;
+
+&lt;p&gt;正文太长懒得看，反正有一样的错误，直接看解决方案：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I figrued out what was going wrong. After looking into the log file and finding that error message, I was able to deduce that I need to upade xlibs. Once this was done everything worked fine.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;For anyone that runs into this issue run this command:&lt;/p&gt;
+  &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;libX11
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;解决。&lt;/p&gt;
+</description>
+				<pubDate>Mon, 12 Jan 2015 15:01:48 +0800</pubDate>
+				<link>http://localhost:4000/blog/linux/2015/01/12/Linux-Firefox-install.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/linux/2015/01/12/Linux-Firefox-install.html</guid>
+			</item>
+		
+			<item>
 				<title>找不到courses.h文件和telnet命令</title>
 				<description>&lt;p&gt;都是不完全安装惹的祸。&lt;/p&gt;
 
