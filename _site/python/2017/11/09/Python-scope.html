@@ -143,110 +143,96 @@
 
             </div>
             <div class="col-md-9">
-                <div class="well article">
+                
+<div class="well article">
+        <h2><a href="/blog/python/2017/11/09/Python-scope.html">Python的作用域陷阱</a></h2>
+        <span class="post-date">
+            
+            11/09/2017
+        </span>
+        <hr style="border-top:1px solid #28323C;"/>
+    
+    <div class="post-content">
+    <p>问题发现：for循环内部的“局部”变量，在出现异常后，赋的变量仍有值可以输出。
+每个循环都输出，发现没有重复。</p>
 
+<p>结论：无for内的“局部”变量。
+Python内的变量作用域，最小是以函数为单位。
+之上是类，再是模块。</p>
 
-    <h2>Linux</h2>
-    <ul>
+<p>对于本问题，而输出没有重复，是因为出现异常后就跳出了赋值语句块，输出的设计不好。
+实际上输出的值，是上次循环中赋的值。</p>
+
+<p>延伸阅读：<a href="https://blog.csdn.net/cc7756789w/article/details/46635383">Python变量作用域</a></p>
+
+    <hr style="border-top:1px solid #28323C;"/>
+
+    <!-- tags and categories under post -->
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+         
+            <li class="icon-style"><a href="/blog/categories.html">
+                Python <span>(2)</span>
+                
+            </a></li>
         
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/15/Linux-install.html">找不到courses.h文件和telnet命令</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/02/Linux-commands.html">【Linux】 零碎的一些命令</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/02/Linux-cat.html">【Linux】cat一些用法</a></li>
-            
-            
-        
-        
+      
     </ul>
+      
 
-    <h2>Ops</h2>
-    <ul>
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-tags"></i></li>
+      
+      
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Python <span>(2)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Scope <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Block <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Local <span>(1)</span>
+                
+                </a>
+            </li>
         
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    11/2018 </span><a href="/blog/ops/2018/11/06/Windows-server.html">家用路由器下Windows系统主机做服务器</a></li>
-            
-            
-        
-        
+      
+      
     </ul>
+      
 
-    <h2>Other</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    08/2019 </span><a href="/blog/other/2019/08/19/hello-world.html">Hello, world!</a></li>
-            
-            
-        
-        
-    </ul>
-
-    <h2>Practice</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    09/2019 </span><a href="/blog/practice/2019/09/11/Gitlab-SSH-key.html">GitLab设置SSH key，以及相关知识</a></li>
-            
-            
-        
-        
-    </ul>
-
-    <h2>Python</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    02/2019 </span><a href="/blog/python/2019/02/02/Python-class-member-default-value.html">Python的类成员变量默认初始值的坑</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    11/2017 </span><a href="/blog/python/2017/11/09/Python-scope.html">Python的作用域陷阱</a></li>
-            
-            
-        
-        
-    </ul>
-
+    </div>
+    
 </div>
-
+<div class="pagination">
+    
+    <a class="btn btn-default" href="/blog/ops/2018/11/06/Windows-server.html" class="next">Newer Post</a>
+    
+    
+    <a class="btn btn-default" href="/blog/linux/2014/12/15/Linux-install.html" class="previous">Older Post</a>
+    
+</div>
             </div>
         </div>
     </div>

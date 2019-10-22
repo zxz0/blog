@@ -1,0 +1,54 @@
+---
+layout: post
+title:  "【Linux】cat一些用法"
+date:   2014-12-02 15:30:08 +0800
+categories: Linux
+tags: Linux cat Bash Command Ops
+description: cat的基本用法，结合重定向的用法
+---
+```sh
+$ cat name
+```
+```sh
+$ cat name1 name2
+```
+将name1，name2文件一起输出到屏幕（先1后2）
+
+```sh
+$ cat > name
+```
+创建name文件：内容在标准输入(ctrl+c或ctrl+d退出)（会覆盖原有文件）（实质：重定向到文件）
+
+```sh
+$ cat name > name2
+```
+把name内容复制创建name2
+
+```sh
+$ cat >> name
+```
+在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d退出)
+
+```sh
+$ cat name1 name2 >> name3
+```
+把name1，name2内容连接，添加在name3后。此时可选参数：
+  - -n 或 –number 由 1 开始对所有输出的行数编号
+  - -b 或 –number-nonblank 和 -n 相似，只不过对于空白行不编号
+  - -s 或 –squeeze-blank 当遇到有连续两行以上的空白行，就代换为一行的空白行
+  - -v 或 –show-nonprinting
+        eg. ```
+            $ cat -n name > name2
+            ``` 把name内容复制创建name2
+            ```
+            $ cat -b name1 name2 >> name3
+            ```
+```
+cat /dev/null > name
+```
+将name文件置空 
+
+```
+cat << EOF >> name
+```
+在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d或EOF退出)

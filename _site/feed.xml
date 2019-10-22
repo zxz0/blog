@@ -147,9 +147,9 @@
   &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/qq_40870418/article/details/78829769&quot;&gt;Diffie-Hellman密钥是如何交换的&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Tue, 10 Sep 2019 10:42:00 -0700</pubDate>
-				<link>http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</guid>
+				<pubDate>Wed, 11 Sep 2019 01:42:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/practice/2019/09/11/Gitlab-SSH-key.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/practice/2019/09/11/Gitlab-SSH-key.html</guid>
 			</item>
 		
 			<item>
@@ -160,9 +160,191 @@
 
 &lt;p&gt;Thanks to &lt;a href=&quot;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&quot;&gt;How to Create a Blog with Jekyll and GitHub Page&lt;/a&gt;, &lt;a href=&quot;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&quot;&gt;Greating your blog for free using Jekyll + Github pages&lt;/a&gt;, &lt;a href=&quot;https://jekyllcn.com&quot;&gt;Jeckll&lt;/a&gt;, &lt;a href=&quot;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&quot;&gt;Failed to load resources with Jekyll on a Github page&lt;/a&gt;, &lt;a href=&quot;https://24ways.org/2013/get-started-with-github-pages/&quot;&gt;Get Started With GitHub Pages (Plus Bonus Jekyll)&lt;/a&gt;, &lt;a href=&quot;https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages&quot;&gt;Configuring a publishing source for GitHub Pages&lt;/a&gt;.&lt;/p&gt;
 </description>
-				<pubDate>Mon, 19 Aug 2019 00:27:00 -0700</pubDate>
+				<pubDate>Mon, 19 Aug 2019 15:27:00 +0800</pubDate>
 				<link>http://localhost:4000/blog/other/2019/08/19/hello-world.html</link>
 				<guid isPermaLink="true">http://localhost:4000/blog/other/2019/08/19/hello-world.html</guid>
+			</item>
+		
+			<item>
+				<title>Python的类成员变量默认初始值的坑</title>
+				<description>&lt;h2 id=&quot;问题发现一个循环内缺省值初始化同名变量其中的list成员不是空会延续之前同名变量的值&quot;&gt;问题发现：一个循环内，缺省值初始化同名变量，其中的list成员不是空，会延续之前同名变量的值。&lt;/h2&gt;
+&lt;p&gt;示例代码：&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Define class&lt;/span&gt;
+class Variant&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;:
+    &lt;span class=&quot;c&quot;&gt;# use&lt;/span&gt;
+    def __init__&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self, price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 500, description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'default description'&lt;/span&gt;, values &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;, &lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;, &lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;:
+        self.price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; price
+        self.description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; description
+        self.values &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; values
+
+    def __str__&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'price: {}, description: {}, values: {}'&lt;/span&gt;.format&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self.price, self.description, self.values&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+variant_list &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# Create instance with same name iteratively&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;i &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;range&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;3&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
+    current_variant &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Variant&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;i &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; 1:
+        current_variant.values[2] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'hello'&lt;/span&gt;
+    current_variant.price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; i
+    current_variant.description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'description of variant: {}'&lt;/span&gt;.format&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;i&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    variant_list.append&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;current_variant&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# Test results&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;variant &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;variant_list:
+    print&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;str&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;variant&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;hr /&gt;
+&lt;p&gt;结果：所有实例的values列表值相同
+—
+原因：“可选参数默认值的设置在Python中只会被执行一次，也就是定义该函数的时候”如此使用缺省值初始化，list成员指向的是同一个list（地址），如果只是修改其中一个元素（而不是赋值新的list开辟新内存），那么所有instance的list成员都会被修改。
+—
+解决方法：直接在构造方法中置为空（self.values = [’’, ‘’, ‘’]），之后各个修改值
+—
+reference: &lt;a href=&quot;https://blog.csdn.net/a462533587/article/details/80666444&quot;&gt;Python 类成员变量使用缺省值初始化时要注意的一个坑&lt;/a&gt;
+&lt;a href=&quot;https://codingpy.com/article/top-10-mistakes-that-python-programmers-make/&quot;&gt;Python程序员最常犯的十个错误&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Sat, 02 Feb 2019 02:29:45 +0800</pubDate>
+				<link>http://localhost:4000/blog/python/2019/02/02/Python-class-member-default-value.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/python/2019/02/02/Python-class-member-default-value.html</guid>
+			</item>
+		
+			<item>
+				<title>家用路由器下Windows系统主机做服务器</title>
+				<description>&lt;ol&gt;
+  &lt;li&gt;绑定内网ip（参考路由器指南）&lt;/li&gt;
+  &lt;li&gt;设置端口转发（参考路由器指南）&lt;/li&gt;
+  &lt;li&gt;目标主机上运行服务器（参考具体语言/框架/项目指南）&lt;/li&gt;
+  &lt;li&gt;Windows防火墙设置（添加出入allow规则，注意和已有规则的冲突：如果一个服务被block且allow，最终会被block）
+注：路由器默认设置为禁止ping&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+				<pubDate>Tue, 06 Nov 2018 06:08:10 +0800</pubDate>
+				<link>http://localhost:4000/blog/ops/2018/11/06/Windows-server.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/ops/2018/11/06/Windows-server.html</guid>
+			</item>
+		
+			<item>
+				<title>Python的作用域陷阱</title>
+				<description>&lt;p&gt;问题发现：for循环内部的“局部”变量，在出现异常后，赋的变量仍有值可以输出。
+每个循环都输出，发现没有重复。&lt;/p&gt;
+
+&lt;p&gt;结论：无for内的“局部”变量。
+Python内的变量作用域，最小是以函数为单位。
+之上是类，再是模块。&lt;/p&gt;
+
+&lt;p&gt;对于本问题，而输出没有重复，是因为出现异常后就跳出了赋值语句块，输出的设计不好。
+实际上输出的值，是上次循环中赋的值。&lt;/p&gt;
+
+&lt;p&gt;延伸阅读：&lt;a href=&quot;https://blog.csdn.net/cc7756789w/article/details/46635383&quot;&gt;Python变量作用域&lt;/a&gt;&lt;/p&gt;
+</description>
+				<pubDate>Thu, 09 Nov 2017 15:59:35 +0800</pubDate>
+				<link>http://localhost:4000/blog/python/2017/11/09/Python-scope.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/python/2017/11/09/Python-scope.html</guid>
+			</item>
+		
+			<item>
+				<title>找不到courses.h文件和telnet命令</title>
+				<description>&lt;p&gt;都是不完全安装惹的祸。&lt;/p&gt;
+
+&lt;p&gt;图形界面下：
+System——Administration——Add/Remove software&lt;/p&gt;
+
+&lt;p&gt;telnet:
+找到
+（图片：The client program for the Telnet remote login protocal 和 The server program for the Telnet remote login protocal）
+Apply&lt;/p&gt;
+
+&lt;p&gt;courses.h:
+找到
+（图片缺失）
+Apply&lt;/p&gt;
+</description>
+				<pubDate>Mon, 15 Dec 2014 16:32:07 +0800</pubDate>
+				<link>http://localhost:4000/blog/linux/2014/12/15/Linux-install.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/15/Linux-install.html</guid>
+			</item>
+		
+			<item>
+				<title>【Linux】 零碎的一些命令</title>
+				<description>&lt;p&gt;文档中：
+b 上页
+空格 下页
+q 退出&lt;/p&gt;
+
+&lt;p&gt;文档的命令模式中：
+gg=G 自动调整缩进&lt;/p&gt;
+
+&lt;p&gt;.c编译运行：&lt;/p&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;gcc hello.c &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;or:cc hello.c&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./a.out
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上翻下翻：
+shift + PgUp
+shift + PgDn&lt;/p&gt;
+
+&lt;p&gt;文件/VIM中查找：
+/
+上一个结果：
+N
+下一个结果：
+n
+取消查找：
+noh&lt;/p&gt;
+</description>
+				<pubDate>Tue, 02 Dec 2014 15:33:57 +0800</pubDate>
+				<link>http://localhost:4000/blog/linux/2014/12/02/Linux-commands.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/02/Linux-commands.html</guid>
+			</item>
+		
+			<item>
+				<title>【Linux】cat一些用法</title>
+				<description>&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name1 name2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;将name1，name2文件一起输出到屏幕（先1后2）&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;创建name文件：内容在标准输入(ctrl+c或ctrl+d退出)（会覆盖原有文件）（实质：重定向到文件）&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; name2
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;把name内容复制创建name2&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d退出)&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name1 name2 &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; name3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;把name1，name2内容连接，添加在name3后。此时可选参数：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;-n 或 –number 由 1 开始对所有输出的行数编号&lt;/li&gt;
+  &lt;li&gt;-b 或 –number-nonblank 和 -n 相似，只不过对于空白行不编号&lt;/li&gt;
+  &lt;li&gt;-s 或 –squeeze-blank 当遇到有连续两行以上的空白行，就代换为一行的空白行&lt;/li&gt;
+  &lt;li&gt;-v 或 –show-nonprinting
+    eg. &lt;code class=&quot;highlighter-rouge&quot;&gt;
+        $ cat -n name &amp;gt; name2
+       &lt;/code&gt; 把name内容复制创建name2
+        &lt;code class=&quot;highlighter-rouge&quot;&gt;
+        $ cat -b name1 name2 &amp;gt;&amp;gt; name3
+       &lt;/code&gt;
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cat /dev/null &amp;gt; name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;将name文件置空&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cat &amp;lt;&amp;lt; EOF &amp;gt;&amp;gt; name
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d或EOF退出)&lt;/p&gt;
+</description>
+				<pubDate>Tue, 02 Dec 2014 15:30:08 +0800</pubDate>
+				<link>http://localhost:4000/blog/linux/2014/12/02/Linux-cat.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/02/Linux-cat.html</guid>
 			</item>
 		
 	</channel>

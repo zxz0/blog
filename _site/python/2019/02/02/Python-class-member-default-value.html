@@ -143,110 +143,107 @@
 
             </div>
             <div class="col-md-9">
-                <div class="well article">
+                
+<div class="well article">
+        <h2><a href="/blog/python/2019/02/02/Python-class-member-default-value.html">Python的类成员变量默认初始值的坑</a></h2>
+        <span class="post-date">
+            
+            02/02/2019
+        </span>
+        <hr style="border-top:1px solid #28323C;"/>
+    
+    <div class="post-content">
+    <h2 id="问题发现一个循环内缺省值初始化同名变量其中的list成员不是空会延续之前同名变量的值">问题发现：一个循环内，缺省值初始化同名变量，其中的list成员不是空，会延续之前同名变量的值。</h2>
+<p>示例代码：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Define class</span>
+class Variant<span class="o">()</span>:
+    <span class="c"># use</span>
+    def __init__<span class="o">(</span>self, price <span class="o">=</span> 500, description <span class="o">=</span> <span class="s1">'default description'</span>, values <span class="o">=</span> <span class="o">[</span><span class="s1">''</span>, <span class="s1">''</span>, <span class="s1">''</span><span class="o">])</span>:
+        self.price <span class="o">=</span> price
+        self.description <span class="o">=</span> description
+        self.values <span class="o">=</span> values
 
+    def __str__<span class="o">(</span>self<span class="o">)</span>:
+        <span class="k">return</span> <span class="s1">'price: {}, description: {}, values: {}'</span>.format<span class="o">(</span>self.price, self.description, self.values<span class="o">)</span>
 
-    <h2>Linux</h2>
-    <ul>
+variant_list <span class="o">=</span> <span class="o">[]</span>
+<span class="c"># Create instance with same name iteratively</span>
+<span class="k">for </span>i <span class="k">in </span>range<span class="o">(</span>3<span class="o">)</span>:
+    current_variant <span class="o">=</span> Variant<span class="o">()</span>
+    <span class="k">if </span>i <span class="o">==</span> 1:
+        current_variant.values[2] <span class="o">=</span> <span class="s1">'hello'</span>
+    current_variant.price <span class="o">=</span> i
+    current_variant.description <span class="o">=</span> <span class="s1">'description of variant: {}'</span>.format<span class="o">(</span>i<span class="o">)</span>
+    variant_list.append<span class="o">(</span>current_variant<span class="o">)</span>
+
+<span class="c"># Test results</span>
+<span class="k">for </span>variant <span class="k">in </span>variant_list:
+    print<span class="o">(</span>str<span class="o">(</span>variant<span class="o">))</span>
+</code></pre></div></div>
+<hr />
+<p>结果：所有实例的values列表值相同
+—
+原因：“可选参数默认值的设置在Python中只会被执行一次，也就是定义该函数的时候”如此使用缺省值初始化，list成员指向的是同一个list（地址），如果只是修改其中一个元素（而不是赋值新的list开辟新内存），那么所有instance的list成员都会被修改。
+—
+解决方法：直接在构造方法中置为空（self.values = [’’, ‘’, ‘’]），之后各个修改值
+—
+reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">Python 类成员变量使用缺省值初始化时要注意的一个坑</a>
+<a href="https://codingpy.com/article/top-10-mistakes-that-python-programmers-make/">Python程序员最常犯的十个错误</a></p>
+
+    <hr style="border-top:1px solid #28323C;"/>
+
+    <!-- tags and categories under post -->
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+         
+            <li class="icon-style"><a href="/blog/categories.html">
+                Python <span>(2)</span>
+                
+            </a></li>
         
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/15/Linux-install.html">找不到courses.h文件和telnet命令</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/02/Linux-commands.html">【Linux】 零碎的一些命令</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    12/2014 </span><a href="/blog/linux/2014/12/02/Linux-cat.html">【Linux】cat一些用法</a></li>
-            
-            
-        
-        
+      
     </ul>
+      
 
-    <h2>Ops</h2>
-    <ul>
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-tags"></i></li>
+      
+      
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Python <span>(2)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Class <span>(1)</span>
+                
+                </a>
+            </li>
         
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    11/2018 </span><a href="/blog/ops/2018/11/06/Windows-server.html">家用路由器下Windows系统主机做服务器</a></li>
-            
-            
-        
-        
+      
+      
     </ul>
+      
 
-    <h2>Other</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    08/2019 </span><a href="/blog/other/2019/08/19/hello-world.html">Hello, world!</a></li>
-            
-            
-        
-        
-    </ul>
-
-    <h2>Practice</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    09/2019 </span><a href="/blog/practice/2019/09/11/Gitlab-SSH-key.html">GitLab设置SSH key，以及相关知识</a></li>
-            
-            
-        
-        
-    </ul>
-
-    <h2>Python</h2>
-    <ul>
-        
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    02/2019 </span><a href="/blog/python/2019/02/02/Python-class-member-default-value.html">Python的类成员变量默认初始值的坑</a></li>
-            
-            
-        
-            
-            
-                <li><span class="post-date">
-                    
-                    11/2017 </span><a href="/blog/python/2017/11/09/Python-scope.html">Python的作用域陷阱</a></li>
-            
-            
-        
-        
-    </ul>
-
+    </div>
+    
 </div>
-
+<div class="pagination">
+    
+    <a class="btn btn-default" href="/blog/other/2019/08/19/hello-world.html" class="next">Newer Post</a>
+    
+    
+    <a class="btn btn-default" href="/blog/ops/2018/11/06/Windows-server.html" class="previous">Older Post</a>
+    
+</div>
             </div>
         </div>
     </div>
