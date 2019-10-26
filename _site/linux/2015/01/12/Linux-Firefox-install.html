@@ -98,6 +98,36 @@
             
                 
             
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
         
     </ul>
 </div>
@@ -109,13 +139,13 @@
         
           <li><a href="/blog/practice/2019/09/11/Gitlab-SSH-key.html">GitLab设置SSH key，以及相关知识</a></li>
         
+          <li><a href="/blog/security/2019/09/05/JWT.html">【转】JWT（JSON Web Token）</a></li>
+        
           <li><a href="/blog/other/2019/08/19/hello-world.html">Hello, world!</a></li>
         
-          <li><a href="/blog/python/2019/02/02/Python-class-member-default-value.html">Python的类成员变量默认初始值的坑</a></li>
+          <li><a href="/blog/architects/2019/08/09/CDN.html">【转】CDN内容分发网络</a></li>
         
-          <li><a href="/blog/ops/2018/11/06/Windows-server.html">家用路由器下Windows系统主机做服务器</a></li>
-        
-          <li><a href="/blog/python/2017/11/09/Python-scope.html">Python的作用域陷阱</a></li>
+          <li><a href="/blog/front-end/2019/08/06/JavaScript-closure.html">【转】JavaScript Closure</a></li>
         
     </ul>
 </div>
@@ -160,7 +190,7 @@
     <p>转为root，</p>
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install </span>firefox
 </code></pre></div></div>
-<p>但是随即出现问题：
+<p>但是随即出现问题：<br />
 (firefox:4871): GnomeUI-WARNING **: While connecting to session manager:
 None of the authentication protocols specified are supported.</p>
 
@@ -170,11 +200,11 @@ None of the authentication protocols specified are supported.</p>
 
 <p>google被墙，百度找不到，辗转到yahoo日本去找。</p>
 
-<p>找到：
+<p>找到：<br />
 <a href="https://www.nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)">Problem With VNC refreshing (Centos 6.2) - nixCraft Linux / UNIX …</a></p>
 
-<p>/usr/bin/gnome-session: symbol lookup error: /usr/lib64/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest (nautilus:17444): EggSMClient-WARNING **: Failed to connect to the session manager: IO error occured opening …
-地址：http://nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)</p>
+<p>/usr/bin/gnome-session: symbol lookup error: /usr/lib64/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest (nautilus:17444): EggSMClient-WARNING **: Failed to connect to the session manager: IO error occured opening …<br />
+地址：<a href="http://nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)">http://nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)</a></p>
 
 <p>正文太长懒得看，反正有一样的错误，直接看解决方案：</p>
 
@@ -184,7 +214,7 @@ None of the authentication protocols specified are supported.</p>
 
 <blockquote>
   <p>For anyone that runs into this issue run this command:</p>
-  <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>	yum <span class="nb">install </span>libX11
+  <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  yum <span class="nb">install </span>libX11
 </code></pre></div>  </div>
 </blockquote>
 

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>zxz0</title>
+	<link rel="icon" href="/blog/assets/images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/blog/assets/js/jquery.min.js"></script>
+    <script src="/blog/assets/js/bootstrap.min.js"></script>
+    <link href="/blog/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/blog/assets/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="assets/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    <!--[if lt IE 9]>
+       <script src="https://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.js"></script>
+    <![endif]-->
+    <link href="/blog/assets/css/main.css" rel="stylesheet" type="text/css">
+
+
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="navbar navbar-custom navbar-fixed-top" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/blog/">zxz0</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    
+                    <li class="active"><a href="/blog/">Home</a></li>
+                    <li class="active"><a href="/blog/archive.html">Archive</a></li>
+                    <li class="active"><a href="/blog/categories.html">Categories</a></li>
+                    <li class="active"><a href="/blog/tags.html">Tags</a></li>
+                    <li class="active"><a href="/blog/about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="wrap">
+    <div class="container container-left">
+        <div class="row">
+            <div class="col-md-3 hidden-xs">
+                
+<div class="sidebar well">
+    <header class="sidebar-header" role="banner">
+        <a href="/blog/">
+            <img src="/blog/assets/images/profile.png" style="width: 150px; height: 150px;" class="img-circle" />
+        </a>
+        <!--
+        <h3 class="title">
+        <a href="/"></a>
+        </h3>
+        -->
+    </header>
+    <div class="text-center">
+        Welcome to zxz0！
+    </div>
+</div>
+
+
+<div class="sidebar well">
+    <h1>Top Posts</h1>
+    <ul>
+        
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+        
+    </ul>
+</div>
+
+
+<div class="sidebar well">
+    <h1>Recent Posts</h1>
+    <ul>
+        
+          <li><a href="/blog/practice/2019/09/11/Gitlab-SSH-key.html">GitLab设置SSH key，以及相关知识</a></li>
+        
+          <li><a href="/blog/security/2019/09/05/JWT.html">【转】JWT（JSON Web Token）</a></li>
+        
+          <li><a href="/blog/other/2019/08/19/hello-world.html">Hello, world!</a></li>
+        
+          <li><a href="/blog/architects/2019/08/09/CDN.html">【转】CDN内容分发网络</a></li>
+        
+          <li><a href="/blog/front-end/2019/08/06/JavaScript-closure.html">【转】JavaScript Closure</a></li>
+        
+    </ul>
+</div>
+
+<div class="sidebar well">
+    
+<h1>Links</h1>
+<ul>
+  <!-- <li><a href="#">One</a></li>
+  <li><a href="#">Two</a></li>
+  <li><a href="#">Three</a></li>
+  <li><a href="#">Four</a></li> -->
+  
+  <li>
+    <a href="http://xixia.info">
+      Xixia
+    </a>
+  </li> 
+  
+  <li>
+    <a href="https://github.com/zxixia/jekyll-xixia">
+      Jekyll-Xixia
+    </a>
+  </li> 
+  
+</ul>
+
+</div>
+
+            </div>
+            <div class="col-md-9">
+                
+<div class="well article">
+        <h2><a href="/blog/front-end/2019/02/14/browser-event-model.html">【转】Browser events: bubbling, capturing, and delegation</a></h2>
+        <span class="post-date">
+            
+            02/14/2019
+        </span>
+        <hr style="border-top:1px solid #28323C;"/>
+    
+    <div class="post-content">
+    <h3 id="总结自">总结自：</h3>
+<ul>
+  <li><a href="https://blog.meteor.com/browser-events-bubbling-capturing-and-delegation-14db28e924ae">Browser events: bubbling, capturing, and delegation</a></li>
+  <li><a href="https://www.jianshu.com/p/2c68c8ceef1c">event delegation – 事件委托</a></li>
+</ul>
+
+<p>Diff, incompatible ways of propagating events:</p>
+<ul>
+  <li>Netscape: capture (up -&gt; down)</li>
+  <li>Internet Explorer: bubble (specific -&gt; general)<br />
+-&gt; W3C: standardize both when addEventListener, can be configured. combining by event first downward to specific, visiting the capturers, then (assuming propagation isn’t stopped) bubbles back up visiting the non-capturing handlers. NO addEventListener support in IE 6/7/8.</li>
+</ul>
+
+<p>Bubbling: bottom -&gt; top (specific -&gt; general)<br />
+In practice: bubbling. lower can stop bubbling before it reaches higher. so: lower: one thing, higher: another</p>
+
+<p>Event object properties:</p>
+<ul>
+  <li>event.target: where the event actually occurred. 最终目标，要捉到事件的元素</li>
+  <li>event.currentTarget: where the event is currently being handled. 当前捕捉到事件的元素，DOM tree上级的都有可能。可以不断变化。</li>
+</ul>
+
+<p>Event delegation: popular technique built into libraries like jQuery. 对于所有元素的行为处理，不是一个个绑定，而是bind a single event handler to the BODY (因为bubbling，所以一定会接收到所有event), and look for event.target to see if it is the element desired. the BODY element is the delegator that handles events on behalf of the A tags, just like: the event handler is on the A tags. 但是子元素触发的(target不是我们绑定的元素了)也可以认为是当前元素触发了，所以除了target判断，还需要模拟bubbling向上看是否有我们绑定的元素作为parent存在。jQuery等库为了完全模拟当前元素事件，set event.currentTarget (非BODY而是我们绑定的元素, simulated) and target（真正出发的元素，我们绑定的元素的本身或子元素），BODY不重要所以无所谓。</p>
+<ul>
+  <li>Add an event listener on some element enclosing all the elements where you want to simulate event handling (BODY)</li>
+  <li>In the handler, simulate bubbling and look for matching elements (all A tags)</li>
+  <li>When you find a matching element, set event.currentTarget to it and call subsequent handling code
+实际上问题多多：比如delegated和non-delegated event handler的顺序等等，但是抽象就是这样。
+如何delegate non-bublling event？不做。大多数想要delegate的都是bubbling event。
+传统的non-bubbling events：</li>
+  <li>change / submit / rest: not bubbling in IE 6/7/8, but do in all other browsers. jQuery makes them bubble.</li>
+  <li>focus / blur: not, ever. since the browser window can also be sent focus / blur events. jQuery defined new name: focusin and focusout, aliases of focus and blur. if use, focusout to avoid confusion.</li>
+  <li>load / error / resize / readystatechange / …: fired on the window or other non-DOM objects like XHRs, so delegation isn’t really relevant. Image tags have a “load” event in some browsers, but it’s not reliable enough to be useful.</li>
+</ul>
+
+    <hr style="border-top:1px solid #28323C;"/>
+
+    <!-- tags and categories under post -->
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+         
+            <li class="icon-style"><a href="/blog/categories.html">
+                Front-End <span>(5)</span>
+                
+            </a></li>
+        
+      
+    </ul>
+      
+
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-tags"></i></li>
+      
+      
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Front-End <span>(6)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Browser <span>(2)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Event <span>(2)</span>
+                
+                </a>
+            </li>
+        
+      
+      
+    </ul>
+      
+
+    </div>
+    
+</div>
+<div class="pagination">
+    
+    <a class="btn btn-default" href="/blog/front-end/2019/03/11/regex-escape.html" class="next">Newer Post</a>
+    
+    
+    <a class="btn btn-default" href="/blog/database/2019/02/12/B+-tree.html" class="previous">Older Post</a>
+    
+</div>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="footer">
+    <p>&copy;2019 zxz0 , Powered by
+            
+                <a href="http://jekyllrb.com/">
+                Jekyll
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="http://getbootstrap.com/">
+                Bootstrap
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="https://github.com/">
+                Github
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="https://github.com/zxixia/jekyll-xixia">
+                Xixia
+                </a>
+                <!-- not the last, output a ',' -->
+                
+            
+    </p>
+</div>
+
+<!-- 
+    
+
+    
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
+  </script>
+
+ 
+-->
+
+</body>
+</html>
+
+</div>

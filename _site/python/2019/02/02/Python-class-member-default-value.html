@@ -98,6 +98,36 @@
             
                 
             
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
         
     </ul>
 </div>
@@ -109,13 +139,13 @@
         
           <li><a href="/blog/practice/2019/09/11/Gitlab-SSH-key.html">GitLab设置SSH key，以及相关知识</a></li>
         
+          <li><a href="/blog/security/2019/09/05/JWT.html">【转】JWT（JSON Web Token）</a></li>
+        
           <li><a href="/blog/other/2019/08/19/hello-world.html">Hello, world!</a></li>
         
-          <li><a href="/blog/python/2019/02/02/Python-class-member-default-value.html">Python的类成员变量默认初始值的坑</a></li>
+          <li><a href="/blog/architects/2019/08/09/CDN.html">【转】CDN内容分发网络</a></li>
         
-          <li><a href="/blog/ops/2018/11/06/Windows-server.html">家用路由器下Windows系统主机做服务器</a></li>
-        
-          <li><a href="/blog/python/2017/11/09/Python-scope.html">Python的作用域陷阱</a></li>
+          <li><a href="/blog/front-end/2019/08/06/JavaScript-closure.html">【转】JavaScript Closure</a></li>
         
     </ul>
 </div>
@@ -159,39 +189,39 @@
     <div class="post-content">
     <h2 id="问题发现一个循环内缺省值初始化同名变量其中的list成员不是空会延续之前同名变量的值">问题发现：一个循环内，缺省值初始化同名变量，其中的list成员不是空，会延续之前同名变量的值。</h2>
 <p>示例代码：</p>
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Define class</span>
-class Variant<span class="o">()</span>:
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Define class</span>
+<span class="k">class</span> <span class="nc">Variant</span><span class="p">():</span>
     <span class="c"># use</span>
-    def __init__<span class="o">(</span>self, price <span class="o">=</span> 500, description <span class="o">=</span> <span class="s1">'default description'</span>, values <span class="o">=</span> <span class="o">[</span><span class="s1">''</span>, <span class="s1">''</span>, <span class="s1">''</span><span class="o">])</span>:
-        self.price <span class="o">=</span> price
-        self.description <span class="o">=</span> description
-        self.values <span class="o">=</span> values
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">price</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">description</span> <span class="o">=</span> <span class="s">'default description'</span><span class="p">,</span> <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="s">''</span><span class="p">,</span> <span class="s">''</span><span class="p">,</span> <span class="s">''</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">price</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">values</span>
 
-    def __str__<span class="o">(</span>self<span class="o">)</span>:
-        <span class="k">return</span> <span class="s1">'price: {}, description: {}, values: {}'</span>.format<span class="o">(</span>self.price, self.description, self.values<span class="o">)</span>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">'price: {}, description: {}, values: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
 
-variant_list <span class="o">=</span> <span class="o">[]</span>
+<span class="n">variant_list</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c"># Create instance with same name iteratively</span>
-<span class="k">for </span>i <span class="k">in </span>range<span class="o">(</span>3<span class="o">)</span>:
-    current_variant <span class="o">=</span> Variant<span class="o">()</span>
-    <span class="k">if </span>i <span class="o">==</span> 1:
-        current_variant.values[2] <span class="o">=</span> <span class="s1">'hello'</span>
-    current_variant.price <span class="o">=</span> i
-    current_variant.description <span class="o">=</span> <span class="s1">'description of variant: {}'</span>.format<span class="o">(</span>i<span class="o">)</span>
-    variant_list.append<span class="o">(</span>current_variant<span class="o">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">current_variant</span> <span class="o">=</span> <span class="n">Variant</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">current_variant</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s">'hello'</span>
+    <span class="n">current_variant</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">i</span>
+    <span class="n">current_variant</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="s">'description of variant: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">variant_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_variant</span><span class="p">)</span>
 
 <span class="c"># Test results</span>
-<span class="k">for </span>variant <span class="k">in </span>variant_list:
-    print<span class="o">(</span>str<span class="o">(</span>variant<span class="o">))</span>
+<span class="k">for</span> <span class="n">variant</span> <span class="ow">in</span> <span class="n">variant_list</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">variant</span><span class="p">))</span>
 </code></pre></div></div>
 <hr />
-<p>结果：所有实例的values列表值相同
-—
-原因：“可选参数默认值的设置在Python中只会被执行一次，也就是定义该函数的时候”如此使用缺省值初始化，list成员指向的是同一个list（地址），如果只是修改其中一个元素（而不是赋值新的list开辟新内存），那么所有instance的list成员都会被修改。
-—
-解决方法：直接在构造方法中置为空（self.values = [’’, ‘’, ‘’]），之后各个修改值
-—
-reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">Python 类成员变量使用缺省值初始化时要注意的一个坑</a>
+<p>结果：所有实例的values列表值相同</p>
+
+<p>原因：“可选参数默认值的设置在Python中只会被执行一次，也就是定义该函数的时候”如此使用缺省值初始化，list成员指向的是同一个list（地址），如果只是修改其中一个元素（而不是赋值新的list开辟新内存），那么所有instance的list成员都会被修改。</p>
+
+<p>解决方法：直接在构造方法中置为空（self.values = [’’, ‘’, ‘’]），之后各个修改值</p>
+
+<p>reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">Python 类成员变量使用缺省值初始化时要注意的一个坑</a>
 <a href="https://codingpy.com/article/top-10-mistakes-that-python-programmers-make/">Python程序员最常犯的十个错误</a></p>
 
     <hr style="border-top:1px solid #28323C;"/>
@@ -204,7 +234,7 @@ reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">P
       
          
             <li class="icon-style"><a href="/blog/categories.html">
-                Python <span>(2)</span>
+                Python <span>(3)</span>
                 
             </a></li>
         
@@ -220,7 +250,7 @@ reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">P
          
             <li class="icon-style">
                 <a href="/blog/tags.html">
-                Python <span>(2)</span>
+                Python <span>(3)</span>
                 ,
                 </a>
             </li>
@@ -242,7 +272,7 @@ reference: <a href="https://blog.csdn.net/a462533587/article/details/80666444">P
 </div>
 <div class="pagination">
     
-    <a class="btn btn-default" href="/blog/other/2019/08/19/hello-world.html" class="next">Newer Post</a>
+    <a class="btn btn-default" href="/blog/python/2019/02/10/Python-project-structure.html" class="next">Newer Post</a>
     
     
     <a class="btn btn-default" href="/blog/ops/2018/11/06/Windows-server.html" class="previous">Older Post</a>

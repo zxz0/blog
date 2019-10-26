@@ -6,7 +6,7 @@ categories: Algorithm
 tags: Algorithm cat Bash Command Ops
 description: 用matlab实现Floyd最短路计算
 ---
-```sh
+```matlab
 clear;clc;
 n=31; a=zeros(n);
 a(1,2)=124;a(1,3)=187;a(1,4)=182*1.5;

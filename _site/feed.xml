@@ -153,6 +153,101 @@
 			</item>
 		
 			<item>
+				<title>【转】JWT（JSON Web Token）</title>
+				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.ruanyifeng.com/blog/2018/07/json_web_token-tutorial.html&quot;&gt;JSON Web Token 入门教程&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;用户认证：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;用户向服务器发送用户名和密码。&lt;/li&gt;
+  &lt;li&gt;服务器验证通过后，在当前对话（session）里面保存相关数据，比如用户角色、登录时间等等。&lt;/li&gt;
+  &lt;li&gt;服务器向用户返回一个 session_id，写入用户的 Cookie。&lt;/li&gt;
+  &lt;li&gt;用户随后的每一次请求，都会通过 Cookie，将 session_id 传回服务器。&lt;/li&gt;
+  &lt;li&gt;服务器收到 session_id，找到前期保存的数据，由此得知用户的身份。&lt;/li&gt;
+  &lt;li&gt;扩展性不好：scaling。单机ok，但是如果是服务器集群 or 跨域的服务导向构架，要求session数据共享。eg. 2个网站，同一家公司，需要一个网站登录，另一个就自动登录。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;解决方法：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;session数据持久化：写入数据库或别的持久层。服务器收到请求后，都像持久层请求数据。架构清晰，但是持久层挂了就惨了。&lt;/li&gt;
+  &lt;li&gt;服务器不保存，所有数据都保存在客户端，每次请求都发回服务器。eg. JWT。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;原理：服务器认证后，生成JSON对象，包括到期时间。每次C与S通信时，都要发回这个JSON对象。防止篡改，服务器会加上签名。 -&amp;gt; 无服务无状态了，容易实现扩展。&lt;/p&gt;
+
+&lt;p&gt;JWT数据结构：很长的字符串，中间用点（.）分隔成三个部分。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Header（头部）·Payload（负载）·Signature（签名）&lt;/li&gt;
+  &lt;li&gt;Header：元数据
+    &lt;ul&gt;
+      &lt;li&gt;{&lt;br /&gt;
+  “alg”: “HS256”, // 签名的算法（algorithm），默认是 HMAC SHA256（写成 HS256）&lt;br /&gt;
+  “typ”: “JWT” // 这个令牌（token）的类型（type），JWT 令牌统一写为JWT&lt;br /&gt;
+  }&lt;/li&gt;
+      &lt;li&gt;最后，将上面的 JSON 对象使用 Base64URL 算法转成字符串。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Payload：存放实际需要传递的数据。
+    &lt;ul&gt;
+      &lt;li&gt;官方规定字段：
+        &lt;ul&gt;
+          &lt;li&gt;iss (issuer)：签发人&lt;/li&gt;
+          &lt;li&gt;exp (expiration time)：过期时间&lt;/li&gt;
+          &lt;li&gt;sub (subject)：主题&lt;/li&gt;
+          &lt;li&gt;aud (audience)：受众&lt;/li&gt;
+          &lt;li&gt;nbf (Not Before)：生效时间&lt;/li&gt;
+          &lt;li&gt;iat (Issued At)：签发时间&lt;/li&gt;
+          &lt;li&gt;jti (JWT ID)：编号&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;也可以定义私有字段&lt;/li&gt;
+      &lt;li&gt;也用BaseURL转成字符串
+！默认不加密，所以不要放秘密信息！&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;signature：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;对前两部分的签名，防止数据篡改。&lt;/li&gt;
+  &lt;li&gt;服务器才知道的密钥（secret），使用Header里面指定的签名算法（默认是HMAC SHA256）算出：&lt;/li&gt;
+  &lt;li&gt;HMACSHA256(&lt;br /&gt;
+	base64UrlEncode(header) + “.” +&lt;br /&gt;
+	base64UrlEncode(payload),&lt;br /&gt;
+	secret)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Base64URL算法：和Base64基本类似。JWT 作为一个令牌（token），有些场合可能会放到 URL（比如 &lt;a href=&quot;http://api.example.com/?token=xxx&quot;&gt;api.example.com/?token=xxx&lt;/a&gt;）。Base64 有三个字符+、/和=，在 URL 里面有特殊含义，所以要被替换掉：=被省略、+替换成-，/替换成_ 。这就是 Base64URL 算法。&lt;/p&gt;
+
+&lt;p&gt;JWT使用方式：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;客户端收到服务器返回的JWT，可以储存在Cookie里面，也可以储存在localStorage。此后每次通信，都要带上这个。可以放在cookie里面自动发送，但是不能跨域。所以更好的做法：HTTP请求的头信息Authorization字段里面：
+    &lt;ul&gt;
+      &lt;li&gt;Authorization: Bearer &lt;token&gt;&lt;/token&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;或者，跨域的时候放在POST请求的数据体里&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;特点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;JWT 默认是不加密，但也是可以加密的。生成原始 Token 以后，可以用密钥再加密一次。&lt;/li&gt;
+  &lt;li&gt;JWT 不加密的情况下，不能将秘密数据写入 JWT。&lt;/li&gt;
+  &lt;li&gt;JWT 不仅可以用于认证，也可以用于交换信息。有效使用 JWT，可以降低服务器查询数据库的次数。&lt;/li&gt;
+  &lt;li&gt;JWT 的最大缺点是，由于服务器不保存 session 状态，因此无法在使用过程中废止某个 token，或者更改 token 的权限。也就是说，一旦 JWT 签发了，在到期之前就会始终有效，除非服务器部署额外的逻辑。&lt;/li&gt;
+  &lt;li&gt;JWT 本身包含了认证信息，一旦泄露，任何人都可以获得该令牌的所有权限。为了减少盗用，JWT 的有效期应该设置得比较短。对于一些比较重要的权限，使用时应该再次对用户进行认证。&lt;/li&gt;
+  &lt;li&gt;为了减少盗用，JWT 不应该使用 HTTP 协议明码传输，要使用 HTTPS 协议传输。
+*JWT还是用在一些不那么需要保证安全的地方会好一些例如确认退订邮件等。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Thu, 05 Sep 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/security/2019/09/05/JWT.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/security/2019/09/05/JWT.html</guid>
+			</item>
+		
+			<item>
 				<title>Hello, world!</title>
 				<description>&lt;h1 id=&quot;some-heading&quot;&gt;some heading&lt;/h1&gt;
 
@@ -166,249 +261,677 @@
 			</item>
 		
 			<item>
-				<title>Python的类成员变量默认初始值的坑</title>
-				<description>&lt;h2 id=&quot;问题发现一个循环内缺省值初始化同名变量其中的list成员不是空会延续之前同名变量的值&quot;&gt;问题发现：一个循环内，缺省值初始化同名变量，其中的list成员不是空，会延续之前同名变量的值。&lt;/h2&gt;
-&lt;p&gt;示例代码：&lt;/p&gt;
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# Define class&lt;/span&gt;
-class Variant&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;:
-    &lt;span class=&quot;c&quot;&gt;# use&lt;/span&gt;
-    def __init__&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self, price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; 500, description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'default description'&lt;/span&gt;, values &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;, &lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;, &lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;:
-        self.price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; price
-        self.description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; description
-        self.values &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; values
-
-    def __str__&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'price: {}, description: {}, values: {}'&lt;/span&gt;.format&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;self.price, self.description, self.values&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-
-variant_list &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt;
-&lt;span class=&quot;c&quot;&gt;# Create instance with same name iteratively&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;i &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;range&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;3&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;:
-    current_variant &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; Variant&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;i &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; 1:
-        current_variant.values[2] &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'hello'&lt;/span&gt;
-    current_variant.price &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; i
-    current_variant.description &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'description of variant: {}'&lt;/span&gt;.format&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;i&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-    variant_list.append&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;current_variant&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c&quot;&gt;# Test results&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;variant &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;variant_list:
-    print&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;str&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;variant&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;hr /&gt;
-&lt;p&gt;结果：所有实例的values列表值相同
-—
-原因：“可选参数默认值的设置在Python中只会被执行一次，也就是定义该函数的时候”如此使用缺省值初始化，list成员指向的是同一个list（地址），如果只是修改其中一个元素（而不是赋值新的list开辟新内存），那么所有instance的list成员都会被修改。
-—
-解决方法：直接在构造方法中置为空（self.values = [’’, ‘’, ‘’]），之后各个修改值
-—
-reference: &lt;a href=&quot;https://blog.csdn.net/a462533587/article/details/80666444&quot;&gt;Python 类成员变量使用缺省值初始化时要注意的一个坑&lt;/a&gt;
-&lt;a href=&quot;https://codingpy.com/article/top-10-mistakes-that-python-programmers-make/&quot;&gt;Python程序员最常犯的十个错误&lt;/a&gt;&lt;/p&gt;
-</description>
-				<pubDate>Sat, 02 Feb 2019 02:29:45 +0800</pubDate>
-				<link>http://localhost:4000/blog/python/2019/02/02/Python-class-member-default-value.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/python/2019/02/02/Python-class-member-default-value.html</guid>
-			</item>
-		
-			<item>
-				<title>家用路由器下Windows系统主机做服务器</title>
-				<description>&lt;ol&gt;
-  &lt;li&gt;绑定内网ip（参考路由器指南）&lt;/li&gt;
-  &lt;li&gt;设置端口转发（参考路由器指南）&lt;/li&gt;
-  &lt;li&gt;目标主机上运行服务器（参考具体语言/框架/项目指南）&lt;/li&gt;
-  &lt;li&gt;Windows防火墙设置（添加出入allow规则，注意和已有规则的冲突：如果一个服务被block且allow，最终会被block）
-注：路由器默认设置为禁止ping&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-				<pubDate>Tue, 06 Nov 2018 06:08:10 +0800</pubDate>
-				<link>http://localhost:4000/blog/ops/2018/11/06/Windows-server.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/ops/2018/11/06/Windows-server.html</guid>
-			</item>
-		
-			<item>
-				<title>Python的作用域陷阱</title>
-				<description>&lt;p&gt;问题发现：for循环内部的“局部”变量，在出现异常后，赋的变量仍有值可以输出。
-每个循环都输出，发现没有重复。&lt;/p&gt;
-
-&lt;p&gt;结论：无for内的“局部”变量。
-Python内的变量作用域，最小是以函数为单位。
-之上是类，再是模块。&lt;/p&gt;
-
-&lt;p&gt;对于本问题，而输出没有重复，是因为出现异常后就跳出了赋值语句块，输出的设计不好。
-实际上输出的值，是上次循环中赋的值。&lt;/p&gt;
-
-&lt;p&gt;延伸阅读：&lt;a href=&quot;https://blog.csdn.net/cc7756789w/article/details/46635383&quot;&gt;Python变量作用域&lt;/a&gt;&lt;/p&gt;
-</description>
-				<pubDate>Thu, 09 Nov 2017 15:59:35 +0800</pubDate>
-				<link>http://localhost:4000/blog/python/2017/11/09/Python-scope.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/python/2017/11/09/Python-scope.html</guid>
-			</item>
-		
-			<item>
-				<title>matlab Floyd最短路计算</title>
-				<description>&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;clear&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;clc&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;31&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;zeros&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;n&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,2&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;124&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,3&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;187&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;1,4&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;182&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;1.5&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-...
-a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;29,30&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;68&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;2&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;a&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;29,31&lt;span class=&quot;o&quot;&gt;)=&lt;/span&gt;41&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;2&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;a+a&lt;span class=&quot;s1&quot;&gt;'; M=max(max(a))*n^2; %M为充分大的正实数
-a=a+((a==0)-eye(n))*M;
-path=zeros(n);
-b=a;
-ccase=xlsread('&lt;/span&gt;各地区累计病例.xls&lt;span class=&quot;s1&quot;&gt;');
-for i=1:n
-  b(:,i)=b(:,i)*ccase(i);
-end
-%a, path
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;计算所有点之间的最短距离，存于a，路径存于path。&lt;/p&gt;
-</description>
-				<pubDate>Sun, 08 Feb 2015 22:17:55 +0800</pubDate>
-				<link>http://localhost:4000/blog/algorithm/2015/02/08/matlab-Floyd.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/algorithm/2015/02/08/matlab-Floyd.html</guid>
-			</item>
-		
-			<item>
-				<title>Linux下firefox安装</title>
-				<description>&lt;p&gt;转为root，&lt;/p&gt;
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;firefox
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;但是随即出现问题：
-(firefox:4871): GnomeUI-WARNING **: While connecting to session manager:
-None of the authentication protocols specified are supported.&lt;/p&gt;
-
-&lt;p&gt;/usr/lib/firefox/firefox: symbol lookup error: /usr/lib/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest&lt;/p&gt;
-
-&lt;p&gt;yum真不是个好东西。。。&lt;/p&gt;
-
-&lt;p&gt;google被墙，百度找不到，辗转到yahoo日本去找。&lt;/p&gt;
-
-&lt;p&gt;找到：
-&lt;a href=&quot;https://www.nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)&quot;&gt;Problem With VNC refreshing (Centos 6.2) - nixCraft Linux / UNIX …&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;/usr/bin/gnome-session: symbol lookup error: /usr/lib64/libgdk-x11-2.0.so.0: undefined symbol: _XGetRequest (nautilus:17444): EggSMClient-WARNING **: Failed to connect to the session manager: IO error occured opening …
-地址：http://nixcraft.com/showthread.php/19976-Problem-With-VNC-refreshing-(Centos-6-2)&lt;/p&gt;
-
-&lt;p&gt;正文太长懒得看，反正有一样的错误，直接看解决方案：&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;I figrued out what was going wrong. After looking into the log file and finding that error message, I was able to deduce that I need to upade xlibs. Once this was done everything worked fine.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;For anyone that runs into this issue run this command:&lt;/p&gt;
-  &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;	yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;libX11
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;解决。&lt;/p&gt;
-</description>
-				<pubDate>Mon, 12 Jan 2015 15:01:48 +0800</pubDate>
-				<link>http://localhost:4000/blog/linux/2015/01/12/Linux-Firefox-install.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/linux/2015/01/12/Linux-Firefox-install.html</guid>
-			</item>
-		
-			<item>
-				<title>找不到courses.h文件和telnet命令</title>
-				<description>&lt;p&gt;都是不完全安装惹的祸。&lt;/p&gt;
-
-&lt;p&gt;图形界面下：
-System——Administration——Add/Remove software&lt;/p&gt;
-
-&lt;p&gt;telnet:
-找到
-（图片：The client program for the Telnet remote login protocal 和 The server program for the Telnet remote login protocal）
-Apply&lt;/p&gt;
-
-&lt;p&gt;courses.h:
-找到
-（图片缺失）
-Apply&lt;/p&gt;
-</description>
-				<pubDate>Mon, 15 Dec 2014 16:32:07 +0800</pubDate>
-				<link>http://localhost:4000/blog/linux/2014/12/15/Linux-install.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/15/Linux-install.html</guid>
-			</item>
-		
-			<item>
-				<title>【Linux】 零碎的一些命令</title>
-				<description>&lt;p&gt;文档中：
-b 上页
-空格 下页
-q 退出&lt;/p&gt;
-
-&lt;p&gt;文档的命令模式中：
-gg=G 自动调整缩进&lt;/p&gt;
-
-&lt;p&gt;.c编译运行：&lt;/p&gt;
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;gcc hello.c &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;or:cc hello.c&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./a.out
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;上翻下翻：
-shift + PgUp
-shift + PgDn&lt;/p&gt;
-
-&lt;p&gt;文件/VIM中查找：
-/
-上一个结果：
-N
-下一个结果：
-n
-取消查找：
-noh&lt;/p&gt;
-</description>
-				<pubDate>Tue, 02 Dec 2014 15:33:57 +0800</pubDate>
-				<link>http://localhost:4000/blog/linux/2014/12/02/Linux-commands.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/02/Linux-commands.html</guid>
-			</item>
-		
-			<item>
-				<title>【Linux】cat一些用法</title>
-				<description>&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name1 name2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;将name1，name2文件一起输出到屏幕（先1后2）&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;创建name文件：内容在标准输入(ctrl+c或ctrl+d退出)（会覆盖原有文件）（实质：重定向到文件）&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; name2
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;把name内容复制创建name2&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d退出)&lt;/p&gt;
-
-&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat &lt;/span&gt;name1 name2 &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; name3
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;把name1，name2内容连接，添加在name3后。此时可选参数：&lt;/p&gt;
+				<title>【转】CDN内容分发网络</title>
+				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
 &lt;ul&gt;
-  &lt;li&gt;-n 或 –number 由 1 开始对所有输出的行数编号&lt;/li&gt;
-  &lt;li&gt;-b 或 –number-nonblank 和 -n 相似，只不过对于空白行不编号&lt;/li&gt;
-  &lt;li&gt;-s 或 –squeeze-blank 当遇到有连续两行以上的空白行，就代换为一行的空白行&lt;/li&gt;
-  &lt;li&gt;-v 或 –show-nonprinting
-    eg. &lt;code class=&quot;highlighter-rouge&quot;&gt;
-        $ cat -n name &amp;gt; name2
-       &lt;/code&gt; 把name内容复制创建name2
-        &lt;code class=&quot;highlighter-rouge&quot;&gt;
-        $ cat -b name1 name2 &amp;gt;&amp;gt; name3
-       &lt;/code&gt;
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cat /dev/null &amp;gt; name
+  &lt;li&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/YqZ14FfXZjfWln2Ye9dS5A&quot;&gt;学习什么是CDN&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;类比快递的多个仓库，智能仓配。解决因分布、宽带、服务器性能带来的访问延迟问题，适用于站点加速、点播、直播等场景。用户可以就近取得所需内容。&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;首先通过预先做好了货物分发，使得最终货品从出仓到消费者手中的过程是比较短的，那么同城范围内可选择的配送公司就有很多选择，除了比较大的四通一达、顺丰以外，还可以选用一些小的物流公司、甚至菜鸟直接调用饿了么的蜂鸟配送也不是不可能。&lt;br /&gt;
+-&amp;gt; CDN技术消除了不同运营商之间互联的瓶颈造成的影响，实现了跨运营商的网络加速，保证不同网络中的用户都能得到良好的访问质量&lt;/li&gt;
+  &lt;li&gt;对于仓配系统来说，最大的灾难可能就是仓库发生火灾、水灾等自然灾害。如果把原来的一个集中式的大仓库打散成多个分布式的小仓库，分别部署在不同地区，就可以有效的减小自然灾害带来的影响。&lt;br /&gt;
+-&amp;gt; 广泛分布的CDN节点加上节点之间的智能冗余机制，可以有效地预防黑客入侵以及降低各种DDoS攻击对网站的影响，同时保证较好的服务质量&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;传统的响应过程：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;用户在自己的浏览器中输入要访问的网站域名。&lt;/li&gt;
+  &lt;li&gt;浏览器向本地DNS服务器请求对该域名的解析。&lt;/li&gt;
+  &lt;li&gt;本地DNS服务器中如果缓存有这个域名的解析结果，则直接响应用户的解析请求。&lt;/li&gt;
+  &lt;li&gt;本地DNS服务器中如果没有关于这个域名的解析结果的缓存，则以迭代方式向整个DNS系统请求解析，获得应答后将结果反馈给浏览器。&lt;/li&gt;
+  &lt;li&gt;浏览器得到域名解析结果，就是该域名相应的服务设备的IP地址 。&lt;/li&gt;
+  &lt;li&gt;浏览器获取IP地址之后，经过标准的TCP握手流程，建立TCP连接。&lt;/li&gt;
+  &lt;li&gt;浏览器向服务器发起HTTP请求。&lt;/li&gt;
+  &lt;li&gt;服务器将用户请求内容传送给浏览器。&lt;/li&gt;
+  &lt;li&gt;经过标准的TCP挥手流程，断开TCP连接。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;引入了CDN之后的响应过程：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;当用户点击网站页面上的内容URL，先经过本地DNS系统解析，如果本地DNS服务器没有相应域名的缓存，则本地DNS系统会将域名的解析权交给CNAME指向的CDN专用DNS服务器。&lt;/li&gt;
+  &lt;li&gt;CDN的DNS服务器将CDN的全局负载均衡设备IP地址返回给用户。&lt;/li&gt;
+  &lt;li&gt;用户向CDN的全局负载均衡设备发起URL访问请求。&lt;/li&gt;
+  &lt;li&gt;CDN全局负载均衡设备根据用户IP地址，以及用户请求的URL，选择一台用户所属区域的区域负载均衡设备，并将请求转发到此设备上。&lt;/li&gt;
+  &lt;li&gt;基于以下这些条件的综合分析之后，区域负载均衡设备会选择一个最优的缓存服务器节点，并从缓存服务器节点处得到缓存服务器的IP地址，最终将得到的IP地址返回给全局负载均衡设备：
+    &lt;ul&gt;
+      &lt;li&gt;根据用户IP地址，判断哪一个边缘节点距用户最近；&lt;/li&gt;
+      &lt;li&gt;根据用户所请求的URL中携带的内容名称，判断哪一个边缘节点上有用户所需内容；&lt;/li&gt;
+      &lt;li&gt;查询各个边缘节点当前的负载情况，判断哪一个边缘节点尚有服务能力。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;全局负载均衡设备把服务器的IP地址返回给用户。&lt;/li&gt;
+  &lt;li&gt;用户向缓存服务器发起请求，缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，而区域均衡设备依然将它分配给了用户，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;总地来说，CDN全局负载均衡设备与CDN区域负载均衡设备根据用户IP地址，将域名解析成相应节点中缓存服务器的IP地址，实现用户就近访问，从而提高服务端响应内容的速度。&lt;/p&gt;
+
+&lt;p&gt;中心节点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;包括CDN网管中心和全局负载均衡DNS重定向解析系统，负责整个CDN网络的分发及管理。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;边缘节点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;CDN边缘节点主要指异地分发节点，由负载均衡设备、高速缓存服务器两部分组成。&lt;/li&gt;
+  &lt;li&gt;负载均衡设备负责每个节点中各个Cache的负载均衡，保证节点的工作效率；同时还负责收集节点与周围环境的信息，保持与全局负载均衡DNS的通信，实现整个系统的负载均衡。&lt;/li&gt;
+  &lt;li&gt;高速缓存服务器（Cache）负责存储客户网站的大量信息，就像一个靠近用户的网站服务器一样响应本地用户的访问请求。通过全局负载均衡DNS的控制，用户的请求被透明地指向离他最近的节点，节点中Cache服务器就像网站的原始服务器一样，响应终端用户的请求。因其距离用户更近，故其响应时间才更快。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;总结：中心节点就像仓配网络中负责货物调配的总仓，而边缘节点就是负责存储货物的各个城市的本地仓库。&lt;/p&gt;
+
+&lt;p&gt;CDN中最重要的四大技术：内容发布、内容存储、内容路由以及内容管理等。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;内容发布 （如何妥善的将货物分发到各个城市的本地仓）：借助于建立索引、缓存、流分裂、组播（Multicast）等技术，将内容发布或投递到距离用户最近的远程服务点（POP）处。&lt;/li&gt;
+  &lt;li&gt;内容存储（如何妥善的各个本地仓存储货物）：对于CDN系统而言，需要考虑两个方面的内容存储问题。一个是内容源的存储，一个是内容在 Cache节点中的存储。&lt;/li&gt;
+  &lt;li&gt;内容路由（如何根据用户的收货地址，智能的匹配出应该优先从哪个仓库发货，选用哪种物流方式等）：它是整体性的网络负载均衡技术，通过内容路由器中的重定向（DNS）机制，在多个远程POP上均衡用户的请求，以使用户请求得到最近内容源的响应。&lt;/li&gt;
+  &lt;li&gt;内容管理（对于整个仓配系统如何进行管理，如整体货物分发的精确度、仓配的时效性、发货地的匹配度等）：它通过内部和外部监控系统，获取网络部件的状况信息，测量内容发布的端到端性能（如包丢失、延时、平均带宽、启动时间、帧速率等），保证网络处于最佳的运行状态。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Fri, 09 Aug 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/architects/2019/08/09/CDN.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/architects/2019/08/09/CDN.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】JavaScript Closure</title>
+				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.freecodecamp.org/news/learn-javascript-closures-in-n-minutes/&quot;&gt;Learn JavaScript Closures in 6 Minutes&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.imooc.com/read/38/article/478&quot;&gt;JavaScript设计模式精讲 - 03 闭包与高阶函数&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;JS支持first-class functions：和其他所有value一样对待，比如strings，numbers还有objects。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;可以作为variables，可以在arrays中，可以被function return&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;重点：可以被function return！！&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;eg.
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hi, Jerome!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;将name文件置空&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;要call里面的那个函数，就需要：&lt;code class=&quot;highlighter-rouge&quot;&gt;getGreeter()(); // 第一个call拿到function，第二个call运行&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;可以放到variable里面：
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;greetJerome&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;greetJerome&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;-&amp;gt; (写活之后)&lt;/p&gt;
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// We can greet anyone now!&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// outer function takes name&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`Hi, &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;!`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// inner function uses it later&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;greetYazeed&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Yazeed'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;greetYazeed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Hi, Jerome!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;当一个函数返回的时候，它的lifecycle就complete了，无法再做任何操作，并且local variables会被清理。除非！！它返回另外一个函数。如果是这样，那么这个返回的函数仍可以access outer variables，即使after the parent passes on.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;好处：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Data Privacy: 安全分享代码。外部者无法maliciously manipulate inner variables。像Java、C++就会有private fields，从class外不可access，所以privacy；JS没有，但是有closure。所以我们可以在outer function内定义一些参数，然后在retured的inner function中使用，而不暴露给外界知道。外界也无法直接access它了，只能通过现成的API。&lt;/li&gt;
+  &lt;li&gt;Currying. 函数一次拿到一个argument:
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+ &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+     &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;add10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 30&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;用于：”preload” a function’s arguments for easier reuse. &lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;React会用到。比如去年出的hooks, 其中最confuing的，useEffect，依赖于closures。&lt;br /&gt;
+eg.
+    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'yazeedb'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+       &lt;span class=&quot;nx&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`https://api.github.com/users/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//username是在outer function中定义的，但是在这个inner function中用到了&lt;/span&gt;
+       &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+       &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+	  
+   &lt;span class=&quot;c1&quot;&gt;// blah blah blah&lt;/span&gt;
+ &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;总结：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;Functions are values, too.&lt;/li&gt;
+  &lt;li&gt;Functions can return other functions.&lt;/li&gt;
+  &lt;li&gt;An outer function’s variables are still accessible to its inner function, even after the outer has passed on.&lt;/li&gt;
+  &lt;li&gt;Those variables are also known as state.&lt;/li&gt;
+  &lt;li&gt;Therefore, closures can also be called stateful functions.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;闭包实现结果缓存（备忘模式）：&lt;/p&gt;
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* 备忘函数 */&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prototype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;slice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;arguments&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// change Arguments to an array&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 函数参数序列化成字符串当作索引change to a string like: [arg]&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// get value, of run function (with array arguments, and fn as this environment)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;或者使用ES6实现：&lt;/p&gt;
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;使用方法：&lt;/p&gt;
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* 复杂计算函数 */&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 2    当前: cache: { '[1]': 2 }&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 2    当前: cache: { '[1]': 2 }&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 3    当前: cache: { '[1]': 2, '[2]': 3 }&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以有的改进：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;只存最新的&lt;/li&gt;
+  &lt;li&gt;缓存持久化：cookies, localStorage等&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意：不可以是Map：键是使用===比较的，如果引用类型（可变，eg. 数组）则会出错&lt;/p&gt;
+
+&lt;p&gt;高阶函数：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;函数作为参数：回调函数。
+    &lt;ul&gt;
+      &lt;li&gt;eg. Vue或者React等框架里面的hook:
+        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// some operations&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;函数作为返回值：
+    &lt;ul&gt;
+      &lt;li&gt;一个函数内部输出另一个函数&lt;/li&gt;
+      &lt;li&gt;利用闭包保持作用域&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Tue, 06 Aug 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/front-end/2019/08/06/JavaScript-closure.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/06/JavaScript-closure.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】JavaScript Memory Management</title>
+				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management&quot;&gt;Memory Management&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;JS在objects创建的时候自动分配内存，不再被使用的时候释放（垃圾回收）。&lt;/p&gt;
+
+&lt;p&gt;memory life cycle：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;分配所需memory；&lt;/li&gt;
+  &lt;li&gt;使用分配的memory（读，写）；(explicit in all language)&lt;/li&gt;
+  &lt;li&gt;在不再被用到的时候，释放分配的内存。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;1、3在low-level language中explicit，high-level中通常implicit.&lt;br /&gt;
+JS？在define的时候分配内存。比如function是一个callable object，会在定义function的时候被分配；function expressions也会分配一个object。&lt;br /&gt;
+一些function calls也会object allocation。比如&lt;code class=&quot;highlighter-rouge&quot;&gt;new Date()&lt;/code&gt;（分配Date object），比如&lt;code class=&quot;highlighter-rouge&quot;&gt;document.createElement(‘div’)&lt;/code&gt;（allocates a DOM element）；&lt;br /&gt;
+一些methods也会allocate new values / objects：&lt;code class=&quot;highlighter-rouge&quot;&gt;s.substr(0, 3)&lt;/code&gt; （因为String是immutable）；&lt;code class=&quot;highlighter-rouge&quot;&gt;a.concat(a2);&lt;/code&gt;&lt;br /&gt;
+Using values basically means reading and writing in allocated memory. This can be done by reading or writing the value of a variable or an object property or even passing an argument to a function.&lt;br /&gt;
+在不需要的时候释放内存：主要问题都在这一phase。最难的地方：确定何时分配的内存不再被需要。底层语言：developer手动决定；某些高级语言，如JS，GC：监控内存分配，确定何时某个被分配的内存块不再被需要，并且reclaim it. 只是approximation，undecidable。&lt;/p&gt;
+
+&lt;p&gt;Gabage Collection：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;reference（引用）：如果一个object has access to the another (implicitly or explicitly)，那么就说这个object reference（引用）另外一个。比如，一个JavaScript object有对其prototype的reference（implicit）以及对自己的properties values的（explicit）。&lt;/li&gt;
+  &lt;li&gt;Reference-counting garbage collenction: 最naive的垃圾回收算法。一个object是否还被需要 -&amp;gt; 一个object是否有任何object referencing it。如果0个references pointing to it，那么叫garbage，或者collectible。
+    &lt;ul&gt;
+      &lt;li&gt;限制：circular reference：a reference b, b also reference a。但是永久都无法被回收。memory leak的常见原因。实际例子？dom元素reference自己的话，即使被从DOM tree中移除，也无法被回收。如果那个元素consume很多memory，那么永远无法回收则会造成browser速度很慢！&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Mark-and-sweep algorithm: 不再被需要 -&amp;gt; unreachable。assume roots，在JS中，是the global object. Garbage collector会定期从root开始，查找所有从root被referenc的，以及往深了找，被他们reference的。剩下的就是non-reachable的，会被回收。这样可以解决之前的circular reference的问题。但是手动释放内存就变难了：需要made explicitly unreachable（之前把所有reference置为空就可以了）。迄今（2019），不可能。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sat, 03 Aug 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/front-end/2019/08/03/JavaScript-memory-management-copy.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/03/JavaScript-memory-management-copy.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】前后端分离/解耦</title>
+				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/BzSRWzxXsX7ykn_IojHwpw&quot;&gt;Web实现前后端分离，前后端解耦&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;（原文逻辑略混乱，估计也是参考了很多不同来源的资料）&lt;/p&gt;
+
+&lt;p&gt;Tomcat + Ngnix (中间也可以有个Node.js)&lt;br /&gt;
+前后端分离会为以后的大型分布式构架、弹性计算构架、微服务构架、多端化服务提供方便。&lt;br /&gt;
+核心思想：前端HTML页面通过Ajax调用后端的RESTful API并使用JSON数据进行交互。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Web服务器：eg. nginx, apache一般只能解析静态资源；&lt;/li&gt;
+  &lt;li&gt;应用服务器：tomcat, jetty, resin可以解析动态资源也可以解析静态资源，但解析静态资源的能力可能没有前者好。
+*一般只有Web服务器才能被外网访问，应用服务器只能内网访问&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;为何分离？前端想负责更多的东西。交互逻辑分配给前端，后端专注提供API，进行权限控制、运算工作。前端可以用Node.js搭建自己的本地服务器，直接在本地开发，通过插件将API请求转发到后台。同事开工，不互相依赖，开发效率更快，分工比较均衡。&lt;/p&gt;
+
+&lt;p&gt;MVC -&amp;gt; 前后端分离：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;MVC（以下都在1个服务器中，静态资源和业务代码混合）：
+    &lt;ul&gt;
+      &lt;li&gt;模型：封装数据的载体。Java中一般是简单POJO（普通Java Bean，包含一系列成员变量以及getter/setter）；&lt;/li&gt;
+      &lt;li&gt;视图：偏重展现。Java中可通过JSP充当视图，或者纯HTML展现（目前的主流）；&lt;/li&gt;
+      &lt;li&gt;控制器：粘合前两者。得到请求，获取数据并封装模型，最后将模型传递到视图中进行展现。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;RESTful简化：
+    &lt;ul&gt;
+      &lt;li&gt;前端服务器（静态资源，关注页面展现）：接受请求 -&amp;gt; 转发请求，获取数据（转发到后端） -&amp;gt; 视图解析（将上一步获取的数据填充到页面中）&lt;/li&gt;
+      &lt;li&gt;后端服务器（业务代码，关注业务逻辑）：接受请求 -&amp;gt; 处理请求，获取数据（eg. 访问数据库查询用户信息） -&amp;gt; 返回数据&lt;/li&gt;
+    &lt;/ul&gt;
   &lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cat &amp;lt;&amp;lt; EOF &amp;gt;&amp;gt; name
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;在name文件之后添加：内容在标准输入(ctrl+c或ctrl+d或EOF退出)&lt;/p&gt;
+&lt;p&gt;REST构架：用URL来访问资源。面向资源。请求方式和CRUD相对应。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;GET：查&lt;/li&gt;
+  &lt;li&gt;POST：增&lt;/li&gt;
+  &lt;li&gt;PUT：改&lt;/li&gt;
+  &lt;li&gt;DELETE：删&lt;/li&gt;
+  &lt;li&gt;无状态的构架模式：任何时候都可以由客户端发出请求到服务端，最终返回自己想要的数据，当前请求不会收到上次请求的印象。 -&amp;gt; 服务器将内部资源发布REST服务，客户端通过URL来访问这些资源，SOA提倡的“面向服务”的思想。所以REST也被看作是一种“轻量级”的SOA实现技术。&lt;/li&gt;
+  &lt;li&gt;实际上，我们往往需要提供一个REST框架，让其实现前后端的分离构架，让开发人员集中精力在业务上。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;前后端分离意义大吗？&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;前端变化比后端变化频繁，则大；&lt;/li&gt;
+  &lt;li&gt;原始开发模式，数据逻辑与表现逻辑混杂不清，则大；&lt;/li&gt;
+  &lt;li&gt;前端后端团队分离，技能差异大，则大；&lt;/li&gt;
+  &lt;li&gt;前端效果绚丽/跨设备兼容要求高，则大。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;JavaWeb：大多是Java程序员负责前端（Ajax / jQuery / JavaScript / HTML / CSS……），和后端（Java/MySQL/Oracle……）
+大中型公司：专业人才；小公司：全才。&lt;br /&gt;
+个人职业发展？建议分开。&lt;/p&gt;
+
+&lt;p&gt;后端java工程师：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;专攻：java基础，设计模式，jvm原理，spring + springmvc原理及源码，linux，mysql事务隔离与锁机制，mongodb，http / tcp，多线程，分布式架构（dubbo，dubbox，spring cloud），弹性计算架构，微服务架构（springboot + zookeeper + docker + jenkins），java性能优化，以及相关的项目管理等等。&lt;/li&gt;
+  &lt;li&gt;追求：三高（高并发，高可用，高性能），安全，存储，业务等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;前端工程师：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;专攻：html5，css3，jquery，angularjs，bootstrap，reactjs，vuejs，webpack，less/sass，gulp，nodejs，Google V8引擎，javascript多线程，模块化，面向切面编程，设计模式，浏览器兼容性，性能优化等等。&lt;/li&gt;
+  &lt;li&gt;追求：页面表现，速度流畅，兼容性，用户体验等等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;曾经的JavaWeb项目构架：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;若干后台框架：Spring MVC / Struts + Spring + Spring JDBC / Hibernate / MyBatis等&lt;/li&gt;
+  &lt;li&gt;分层：
+    &lt;ul&gt;
+      &lt;li&gt;控制层（controller/action）：负责接收数据，调用相关业务，分装数据，以及路由，渲染到JSP页面&lt;/li&gt;
+      &lt;li&gt;业务层（service/manage）&lt;/li&gt;
+      &lt;li&gt;持久层（dao）&lt;/li&gt;
+      &lt;li&gt;JSP页面上使用各种标签（jstl / el / struts标签等）或者手写Java表达式（&amp;lt;%=%&amp;gt;）展现后台数据，MVC套路&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;发布：
+    &lt;ul&gt;
+      &lt;li&gt;Maven或者Eclipse等工具打成war包，发布到生产环境下的web容器（tomcat / jboss / weblogic / websphere / jetty / resin） -&amp;gt;&lt;/li&gt;
+      &lt;li&gt;启动Web容器，开始提供服务，配置域名，DNS……相关&lt;/li&gt;
+      &lt;li&gt;（前后端都在war包里，包括js，css，图片，各种第三方的库）&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;网站域名 -&amp;gt; senario?&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;浏览器通过dns服务器找到服务器外网ip，发送HTTP请求到服务器，TCP3次握手之后（HTTP下面是TCP），通过TCP协议开始传输数据；服务器得到请求后，开始提供服务，接受参数，之后返回应答给浏览器；浏览器通过content-type解析返回的内容，呈现给用户。&lt;/li&gt;
+  &lt;li&gt;eg. 100张图片？看似一次HTTP请求，其实不是：第一次访问的时候，无缓存，所以有100次HTTP请求；服务器接收了，都需要耗费内存区创建socket来做TCP传输（消耗服务器上的计算资源）。&lt;/li&gt;
+  &lt;li&gt;-&amp;gt; 服务器压力会很大：页面中所有的请求都只请求到这台服务器上，并发访问，服务器能扛住多少个TCP连接？宽带有多大？服务器内存有多大？硬盘高性能？能扛住多少IO？给web服务器分布的内存有多大？会不会宕机？&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;so！越是大中型的web应用，越是要解耦。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;理论上，可以把数据库 + 应用服务 + 消息队列 + 缓存 + 用户上传的文件 + 日志……都放在一台服务器上……隐患大：一个子应用的内存不稳定导致整个服务器内存溢出而hung住？整个网站就都挂了！&lt;/li&gt;
+  &lt;li&gt;*技术一定要走在业务前面，否则，将错过最佳的发展期！&lt;/li&gt;
+  &lt;li&gt;服务器负载能力不足？负载均衡，将服务器做成集群：水平扩展一块巨石，性能加速将会越来越低——本身负载久低的功能 or 模块是没必要水平扩展的——性能瓶颈不在前端，干嘛要水平扩展前端？&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;正常构架：拆开！&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;web服务器集群，应用服务器集群，文件服务器集群，数据库服务器集群，消息队列集群，缓存集群……&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;JSP痛点：performance。需要提升负载能力——&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;动态资源和静态资源全部耦合在一起，服务器压力大，因为服务器会收到各种http请求，例如css的http请求，js的，图片的等等。
+一旦服务器出现状况，前后台一起玩完，用户体验极差。&lt;/li&gt;
+  &lt;li&gt;UI出好设计图后，前端工程师只负责将设计图切成html，需要由java工程师来将html套成jsp页面，出错率较高（因为页面中经常会出现大量的js代码），
+修改问题时需要双方协同开发，效率低下。&lt;/li&gt;
+  &lt;li&gt;jsp必须要在支持java的web服务器里运行（例如tomcat，jetty，resin等），无法使用nginx等（nginx据说单实例http并发高达5w，这个优势要用上），
+性能提不上来。&lt;/li&gt;
+  &lt;li&gt;第一次请求jsp，必须要在web服务器中编译成servlet，第一次运行会较慢。&lt;/li&gt;
+  &lt;li&gt;每次请求jsp都是访问servlet再用输出流输出的html页面，效率没有直接使用html高（是每次哟，亲~）。&lt;/li&gt;
+  &lt;li&gt;jsp内有较多标签和表达式，前端工程师在修改页面时会捉襟见肘，遇到很多痛点。&lt;/li&gt;
+  &lt;li&gt;如果jsp中的内容很多，页面响应会很慢，因为是同步加载。&lt;/li&gt;
+  &lt;li&gt;需要前端工程师使用java的ide（例如eclipse），以及需要配置各种后端的开发环境，你们有考虑过前端工程师的感受吗。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;开发模式的转变：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;产品经理/领导/客户提出需求&lt;/li&gt;
+  &lt;li&gt;UI做出设计图&lt;/li&gt;
+  &lt;li&gt;前端工程师做html页面&lt;/li&gt;
+  &lt;li&gt;后端工程师将html页面套成jsp页面（前后端强依赖，后端必须要等前端的html做好才能套jsp。如果html发生变更，就更痛了，开发效率低）&lt;/li&gt;
+  &lt;li&gt;集成出现问题&lt;/li&gt;
+  &lt;li&gt;前端返工&lt;/li&gt;
+  &lt;li&gt;后端返工&lt;/li&gt;
+  &lt;li&gt;二次集成&lt;/li&gt;
+  &lt;li&gt;集成成功&lt;/li&gt;
+  &lt;li&gt;交付&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;-&amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;产品经历/领导/客户提出需求&lt;/li&gt;
+  &lt;li&gt;UI做出设计图&lt;/li&gt;
+  &lt;li&gt;前后端约定接口&amp;amp;数据&amp;amp;参数&lt;/li&gt;
+  &lt;li&gt;前后端并行开发（无强依赖，可前后端并行开发，如果需求变更，只要接口&amp;amp;参数不变，就不用两边都修改代码，开发效率高）&lt;/li&gt;
+  &lt;li&gt;前后端集成&lt;/li&gt;
+  &lt;li&gt;前端页面调整&lt;/li&gt;
+  &lt;li&gt;集成成功&lt;/li&gt;
+  &lt;li&gt;交付&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;请求方式的转变：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;客户端请求&lt;/li&gt;
+  &lt;li&gt;服务端的servlet或controller接收请求（后端控制路由与渲染页面，整个项目开发的权重大部分在后端）&lt;/li&gt;
+  &lt;li&gt;调用service,dao代码完成业务逻辑&lt;/li&gt;
+  &lt;li&gt;返回jsp&lt;/li&gt;
+  &lt;li&gt;jsp展现一些动态的代码&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;-&amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;浏览器发送请求&lt;/li&gt;
+  &lt;li&gt;直接到达html页面（前端控制路由与渲染页面，整个项目开发的权重前移）&lt;/li&gt;
+  &lt;li&gt;html页面负责调用服务端接口产生数据（通过ajax等等，后台返回json格式数据，json数据格式因为简洁高效而取代xml）&lt;/li&gt;
+  &lt;li&gt;填充html，展现动态效果，在页面上进行解析并操作DOM。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;eg. 阿里巴巴等大型网站，按一下F12，监控一下你刷新一次页面，他的http流。大多数都是单独请求后台数据，使用json传输数据，而不是一个大而全的http请求把整个页面包括动+静全部返回过来。&lt;/p&gt;
+
+&lt;p&gt;新的请求步骤：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;大量并发浏览器请求 -&amp;gt; web服务器集群(nginx) -&amp;gt; 应用服务器集群(tomcat) -&amp;gt; 文件/数据库/缓存/消息队列服务器集群&lt;/li&gt;
+  &lt;li&gt;同时又可以玩分模块，还可以按业务拆成一个个的小集群，为后面的架构升级做准备。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;前后端分离的优势：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;可以实现真正的前后端解耦，前端服务器使用nginx。
+    &lt;ul&gt;
+      &lt;li&gt;前端/WEB服务器放的是css，js，图片等等一系列静态资源（甚至你还可以css，js，图片等资源放到特定的文件服务器，例如阿里云的oss，并使用cdn加速），前端服务器负责控制页面引用&amp;amp;跳转&amp;amp;路由，前端页面异步调用后端的接口，后端/应用服务器使用tomcat（把tomcat想象成一个数据提供者），加快整体响应速度。&lt;/li&gt;
+      &lt;li&gt;这里需要使用一些前端工程化的框架比如nodejs，react，router，react，redux，webpack&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;发现bug，可以快速定位是谁的问题，不会出现互相踢皮球的现象。
+    &lt;ul&gt;
+      &lt;li&gt;页面逻辑，跳转错误，浏览器兼容性问题，脚本错误，页面样式等问题，全部由前端工程师来负责。&lt;/li&gt;
+      &lt;li&gt;接口数据出错，数据没有提交成功，应答超时等问题，全部由后端工程师来解决&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;在大并发情况下，可以同时水平扩展前后端服务器，比如淘宝的一个首页就需要2000+台前端服务器做集群来抗住日均多少亿+的日均pv。
+    &lt;ul&gt;
+      &lt;li&gt;去参加阿里的技术峰会，听他们说他们的web容器都是自己写的，就算他单实例抗10万http并发，2000台是2亿http并发，并且他们还可以根据预知洪峰来无限拓展，很恐怖，就一个首页。。。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;减少后端服务器的并发/负载压力
+    &lt;ul&gt;
+      &lt;li&gt;除了接口以外的其他所有http请求全部转移到前端nginx上，接口的请求调用tomcat，参考nginx反向代理tomcat。&lt;/li&gt;
+      &lt;li&gt;且除了第一次页面请求外，浏览器会大量调用本地缓存。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;即使后端服务暂时超时或者宕机了，前端页面也会正常访问，只不过数据刷不出来而已。&lt;/li&gt;
+  &lt;li&gt;也许你也需要有微信相关的轻应用，那样你的接口完全可以共用，如果也有app相关的服务，那么只要通过一些代码重构，也可以大量复用接口，提升效率。（多端应用）&lt;/li&gt;
+  &lt;li&gt;页面显示的东西再多也不怕，因为是异步加载。&lt;/li&gt;
+  &lt;li&gt;nginx支持页面热部署，不用重启服务器，前端升级更无缝。&lt;/li&gt;
+  &lt;li&gt;增加代码的维护性&amp;amp;易读性（前后端耦在一起的代码读起来相当费劲）。&lt;/li&gt;
+  &lt;li&gt;提升开发效率，因为可以前后端并行开发，而不是像以前的强依赖。&lt;/li&gt;
+  &lt;li&gt;在nginx中部署证书，外网使用https访问，并且只开放443和80端口，其他端口一律关闭（防止黑客端口扫描），
+    &lt;ul&gt;
+      &lt;li&gt;内网使用http，性能和安全都有保障。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;前端大量的组件代码得以复用，组件化，提升开发效率，抽出来！&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意事项：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;在开需求会议的时候，前后端工程师必须全部参加，并且需要制定好接口文档，后端工程师要写好测试用例（2个维度），不要让前端工程师充当你的专职测试，
+推荐使用chrome的插件postman或soapui或jmeter，service层的测试用例拿junit写。ps：前端也可以玩单元测试吗？&lt;/li&gt;
+  &lt;li&gt;上述的接口并不是java里的interface，说白了调用接口就是调用你controller里的方法。&lt;/li&gt;
+  &lt;li&gt;加重了前端团队的工作量，减轻了后端团队的工作量，提高了性能和可扩展性。&lt;/li&gt;
+  &lt;li&gt;我们需要一些前端的框架来解决类似于页面嵌套，分页，页面跳转控制等功能。（上面提到的那些前端框架）。&lt;/li&gt;
+  &lt;li&gt;如果你的项目很小，或者是一个单纯的内网项目，那你大可放心，不用任何架构而言，但是如果你的项目是外网项目，呵呵哒。&lt;/li&gt;
+  &lt;li&gt;以前还有人在使用类似于velocity/freemarker等模板框架来生成静态页面，仁者见仁智者见智。&lt;/li&gt;
+  &lt;li&gt;这篇文章主要的目的是说jsp在大型外网java web项目中被淘汰掉，可没说jsp可以完全不学，对于一些学生朋友来说，jsp/servlet等相关的java web基础还是要掌握牢的，不然你以为springmvc这种框架是基于什么来写的？&lt;/li&gt;
+  &lt;li&gt;如果页面上有一些权限等等相关的校验，那么这些相关的数据也可以通过Ajax从接口里拿。&lt;/li&gt;
+  &lt;li&gt;对于既可以前端做也可以后端做的逻辑，我建议是放到前端，为什么？
+    &lt;ul&gt;
+      &lt;li&gt;因为你的逻辑需要计算资源进行计算，如果放到后端去run逻辑，则会消耗带宽&amp;amp;内存&amp;amp;cpu等等计算资源，你要记住一点就是：服务端的计算资源是有限的，而如果放到前端，使用的是客户端的计算资源，这样你的服务端负载就会下降（高并发场景）。&lt;/li&gt;
+      &lt;li&gt;*类似于数据校验这种，前后端都需要做！&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;前端需要有机制应对后端请求超时以及后端服务宕机的情况，友好的展示给用户。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;扩展阅读：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;其实对于js，css，图片这类的静态资源可以考虑放到类似于阿里云的oss这类文件服务器上（如果是普通的服务器&amp;amp;操作系统，存储在到达pb级的文件后，或者单个文件夹内的文件数量达到3-5万，io会有很严重的性能问题），再在oss上配cdn（全国子节点加速），这样你页面打开的速度像飞一样， 无论你在全国的哪个地方，并且你的nginx的负载会进一步降低。&lt;/li&gt;
+  &lt;li&gt;如果你要玩轻量级微服务架构，要使用nodejs做网关，用nodejs的好处还有利于seo优化，因为nginx只是向浏览器返回页面静态资源，而国内的搜索引擎爬虫只会抓取静态数据，不会解析页面中的js，这使得应用得不到良好的搜索引擎支持。同时因为nginx不会进行页面的组装渲染，需要把静态页面返回到浏览器，然后完成渲染工作，这加重了浏览器的渲染负担。
+浏览器发起的请求经过nginx进行分发，URL请求统一分发到nodejs，在nodejs中进行页面组装渲染；API请求则直接发送到后端服务器，完成响应。&lt;/li&gt;
+  &lt;li&gt;如果遇到跨域问题，spring4的CORS可以完美解决，但一般使用nginx反向代理都不会有跨域问题，除非你把前端服务和后端服务分成两个域名。
+JSONP的方式也被淘汰掉了。&lt;/li&gt;
+  &lt;li&gt;如果想玩多端应用，注意要去掉tomcat原生的session机制，要使用token机制，使用缓存（因为是分布式系统），做单点，对于token机制的安全性问题，可以搜一下jwt。&lt;/li&gt;
+  &lt;li&gt;前端项目中可以加入mock测试（构造虚拟测试对象来模拟后端，可以独立开发和测试），后端需要有详细的测试用例，保证服务的可用性与稳定性。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;总结：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;不仅仅是一种开发模式，更是一种构架模式（前后端分离构架）。。&lt;/li&gt;
+  &lt;li&gt;前端后端是2个项目，放在2个不同的服务器，需要独立部署，2个不同的工程，2个不同的代码库，2套不同的开发人员。&lt;/li&gt;
+  &lt;li&gt;前后端约定交互接口，实现并行开发；结束后独立部署，前端通过Ajax发送HTTP请求调用后端的RESTful API。&lt;/li&gt;
+  &lt;li&gt;前端只需关注页面的样式和动态数据的解析/渲染，后端专注于具体业务逻辑。&lt;/li&gt;
+&lt;/ul&gt;
 </description>
-				<pubDate>Tue, 02 Dec 2014 15:30:08 +0800</pubDate>
-				<link>http://localhost:4000/blog/linux/2014/12/02/Linux-cat.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/linux/2014/12/02/Linux-cat.html</guid>
+				<pubDate>Sun, 28 Jul 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/fullstack/2019/07/28/front-end-back-end-decouple.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/fullstack/2019/07/28/front-end-back-end-decouple.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】BT种子以及磁力链接——去中心化网络</title>
+				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://sspai.com/post/55502&quot;&gt;别再问我什么是 BT 种子&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;中心式服务器：
+比如下载的人一多，每个人分配到的带宽就变小了，下载速度会变慢。更危险的是，这期视频是敏感资源，你的哥们本来就不应该分享给你，如果每羊被抓了，大家也都别下载了。&lt;br /&gt;
+-&amp;gt; 分散&lt;br /&gt;
+针对这些问题，美国工程师 Bram Cohen 在 2001 年发布了 BitTorrent 协议，资源不再由一个人或一个中心服务器提供，而是所有人提供给所有人，下载的人越多，速度越快。这种模式也叫 peer-to-peer（用户群对用户群），也就是我们常说的 P2P 下载。&lt;br /&gt;
+核心思想：把文件分成很多个小块，让下载者互相连接/交换。&lt;/p&gt;
+
+&lt;p&gt;种子文件，后缀名.torrent：BT种子——资源共享者生成的包含下载信息的种子文件。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;包含：文件名，大小，分块后每块文件的大小，哈希值，以及Tracker服务器的地址。&lt;/li&gt;
+  &lt;li&gt;！Tracker很重要！通过Tracker找到其他下载者的联系方式：
+    &lt;ul&gt;
+      &lt;li&gt;eg. 下载软件打开种子后，联系种子文件内置的Tracker服务器，请求文件；服务器记录下IP，并返回其他正在下载或者下载完成的人的IP -&amp;gt; 组队下载。&lt;/li&gt;
+      &lt;li&gt;eg2. 如果没有正在下载的人，且资源发布者也不在线？拜拜了您嘞（0kb/s）。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;so! Tracker服务器是P2P网络的弱点：若Tracker被关闭，则无法找到同伴，难以完成下载。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;摆脱对Tracker服务器的依赖 -&amp;gt; 磁力链接（Magnet URI scheme），&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;eg. magnet:?xt=urn:btih:1a427c8498f72b9a27fde87662dbeb6fc043fc47&lt;/li&gt;
+  &lt;li&gt;标准格式 + 40个16进制数字。哈希值，文件ごとにunique。每个人都是小型Tracker，有动态更新的地址和文件信息。扩散开来。&lt;br /&gt;
+占用大量资源，效率低，有可能重复广播，造成广播灾难 -&amp;gt; + （逻辑）距离。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;构建DHT（分布式哈希表）网络：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;每个磁力链接：唯一的文件ID，有2 ^ (4 * 40) = 2 ^ 160种组合。&lt;/li&gt;
+  &lt;li&gt;发布文件后：可以计算知道的节点ID和这个文件ID的距离，计算出来距离最短的节点再计算它知道的节点和文件ID的距离，不断重复，直到找到与文件ID距离最短的一批节点，把下载信息存在那里。&lt;/li&gt;
+  &lt;li&gt;下载者同样。&lt;/li&gt;
+  &lt;li&gt;距离的具体计算？二叉树。下载者的ID，向上追溯，非自己的那一边的子树（不断向上，则节点不断变多），每层1个，叫做k-bucket。每个bucket都可以推算距离范围（用异或算距离，可转化成十进制方便理解，距离是连续的，毕竟算是），所以文件ID可以定位到对应的k-bucket。每个k-bucket我们实际都存了至少8个节点，即使有一个下线，也不会影响到整个网络。&lt;/li&gt;
+  &lt;li&gt;2 ^ 160足够大，够所有人用，以及多文件。&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sun, 21 Jul 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/network/2019/07/21/BT-torrent.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/network/2019/07/21/BT-torrent.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】为何选择31做hashCode的mod？</title>
+				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000010799123&quot;&gt;科普：为什么 String hashCode 方法选择数字31作为乘子&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Java String类中的hashCode():&lt;/p&gt;
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hash&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// String 内部维护的一个 char 类型数组&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;31&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;hash&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;即为：s[0]*31^(n-1) + s[1]*31^(n-2) + … + s[n-1]&lt;/p&gt;
+
+&lt;p&gt;原因：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;31: 质数，不大不小。质数可以降低哈希冲突；不大不小可以不太分散（overflow），也不太集中（冲突率上升）。奇数乘法overflow不会丢失信息：偶数的话，会：* 2 相当于shifting。&lt;/li&gt;
+  &lt;li&gt;31: 可以被JVM优化：31 * i = (i « 5) - i（移位和减法）&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+				<pubDate>Tue, 18 Jun 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/java/2019/06/18/hashCode-mod-choice.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/java/2019/06/18/hashCode-mod-choice.html</guid>
+			</item>
+		
+			<item>
+				<title>【转】原码 补码 反码</title>
+				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/zhangziqiu/archive/2011/03/30/ComputerCode.html&quot;&gt;原码, 反码, 补码 详解&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;原码：符号位 + 真值的绝对值。正数为0，负数为1。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;比如，8位：[1111 1111, 0111 1111] -&amp;gt; [-127, 127]&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;反码：正数：本身；负数：原码符号位不变，其余各位取反&lt;/p&gt;
+
+&lt;p&gt;补码：正数：本身；负数：原码符号位不变，其余各位取反（反码），+ 1&lt;/p&gt;
+
+&lt;p&gt;为何？因为人肉眼可以识别符号位，然后直接对之后的做加减；但是计算机加减乘除运算想设计得尽量简单，所以不想辨别“符号位”，于是？让符号位也参与运算！又因为 - 正数 = + 负数，所以只需要设计加法。&lt;br /&gt;
+原码减法会错：1-1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原 = [1000 0010]原 = -2&lt;br /&gt;
+反码2个0: 1 - 1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原= [0000 0001]反 + [1111 1110]反 = [1111 1111]反 = [1000 0000]原 = -0 减法ok：真值正确，但是2个0的编码: +0和-0（[0000 0000]原和[1000 0000]原）。&lt;br /&gt;
+补码1个0，并且可以多一个数：1-1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原 = [0000 0001]补 + [1111 1111]补 = [0000 0000]补=[0000 0000]原。&lt;br /&gt;
+可以用[1000 0000]表示-128&lt;br /&gt;
+(-1) + (-127) = [1000 0001]原 + [1111 1111]原 = [1111 1111]补 + [1000 0001]补 = [1000 0000]  补（因为是用多出来的补码表示的，所以没有对应的原码和反码表示：如果算回去原码，是[0000 0000]，不正确）&lt;br /&gt;
+所以，8位二进制，用原码 / 反码可以[-127, +127]，但用补码: [-128, 127]. ！正0补码表示0，负0补码表示-128！&lt;/p&gt;
+
+&lt;p&gt;因为机器使用补码, 所以对于编程中常用到的32位int类型, 可以表示范围是: [-2^31, 2^31 - 1] 因为第一位表示的是符号位.而使用补码表示时又可以多保存一个最小值.&lt;/p&gt;
+
+&lt;p&gt;同余：X，Y关于模Z同余（除以Z余数相同）&lt;br /&gt;
+负数的模？根据mod运算的数学定义： x mod y = x - y[x/y] // []表示下界&lt;br /&gt;
+eg. (-2) mod 12 = -2 - 12 * [-0.几]下界 = -2 - 12 * (-1) = 10&lt;br /&gt;
+而 10 mod 12 = 10，同余&lt;br /&gt;
+所以在一个12进制的表盘上，回拨2小时 = 往前进10小时&lt;br /&gt;
+要用正数代替负数，只要用同余数的两定理：&lt;br /&gt;
+a ≡ a (mod m) // 反身性：a和a关于m同余&lt;br /&gt;
+如果a ≡ b (mod m)，c ≡ d (mod m) 那么:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;a ± c ≡ b ± d (mod m)&lt;/li&gt;
+  &lt;li&gt;a * c ≡ b * d (mod m)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;so:&lt;br /&gt;
+7 ≡ 7 (mod 12)&lt;br /&gt;
+(-2) ≡ 10 (mod 12)&lt;br /&gt;
+7 - 2 ≡ 7 + 10 (mod 12) (为一个负数找到了正数同余数)&lt;br /&gt;
+回到编码：&lt;br /&gt;
+2 - 1 = 2 + (-1) = [0000 0010]原 + [1000 0001]原= [0000 0010]反 + [1111 1110]反&lt;br /&gt;
+若将此[111 1110]反看作是原码，则应该是-126，移去符号位：126&lt;br /&gt;
+而有：&lt;br /&gt;
+(-1) mod 127 = 126&lt;br /&gt;
+126 mod 127 = 126&lt;br /&gt;
+即：&lt;br /&gt;
+(-1) ≡ 126 (mod 127)&lt;br /&gt;
+2-1 ≡ 2+126 (mod 127)&lt;br /&gt;
+余数相同，且正是我们希望的2 - 1 = 1&lt;br /&gt;
+=&amp;gt; 反码, 实际上是这个数对于一个模的同余数. 而这个模并不是我们的二进制, 而是所能表示的最大值! 这就和钟表一样, 转了一圈后总能找到在可表示范围内的一个正确的数值!（减去一个数，相当于加上这个数的同余数：最后到达同样的刻度，只是多走了一圈而已。这里就是溢出的符号位）&lt;br /&gt;
+2+126：相当于钟表转过了一轮, 而因为符号位是参与计算的, 正好和溢出的最高位形成正确的运算结果.&lt;br /&gt;
+反码：可以将减法变成加法&lt;/p&gt;
+
+&lt;p&gt;补码：&lt;br /&gt;
+2-1=2+(-1) = [0000 0010]原 + [1000 0001]原 = [0000 0010]补 + [1111 1111]补&lt;br /&gt;
+若将此[1111 1111]当成原码, 去除符号位, 则:&lt;br /&gt;
+[0111 1111]原 = 127&lt;br /&gt;
+为何在反码基础上+1？增加了模的值（刻度盘的size）：&lt;br /&gt;
+(-1) mod 128 = 127&lt;br /&gt;
+127 mod 128 = 127&lt;br /&gt;
+2 - 1 ≡ 2 + 127 (mod 128)&lt;br /&gt;
+（每128个刻度转一轮，补码范围：[-128, 128]，但是因为0的情况，所以取值范围是[-128, 127]）&lt;/p&gt;
+</description>
+				<pubDate>Fri, 24 May 2019 03:00:00 +0800</pubDate>
+				<link>http://localhost:4000/blog/computer/2019/05/24/true-code-complemental-code-ones-complement-code.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/computer/2019/05/24/true-code-complemental-code-ones-complement-code.html</guid>
 			</item>
 		
 	</channel>
