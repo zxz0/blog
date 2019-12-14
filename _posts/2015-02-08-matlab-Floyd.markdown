@@ -3,7 +3,7 @@ layout: post
 title:  "matlab Floyd最短路计算"
 date:   2015-02-08 22:17:55 +0800
 categories: Algorithm
-tags: Algorithm cat Bash Command Ops
+tags: Implementation matlab
 description: 用matlab实现Floyd最短路计算
 ---
 ```matlab

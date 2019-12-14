@@ -7,6 +7,847 @@
 		<atom:link href="http://localhost:4000/blog/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>粗观Quartz调度框架</title>
+				<description>&lt;p&gt;有段Quartz有关的代码需要维护，做了一点research&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;JobDetail，是Job信息的抽象&lt;/li&gt;
+  &lt;li&gt;Trigger，是触发器，很好理解&lt;/li&gt;
+  &lt;li&gt;Job，则是具体的job，execute()之中的方法是干实事（business logic）的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一个Job可以有很多trigger，一个trigger只能trigger一个job，这种松耦合，给予了scheduler很大的灵活性。&lt;/p&gt;
+
+&lt;p&gt;具体机制：当事件被触发的时候，Job就会被instantiate，然后执行execute()方法。也就是说，Job是stateless的。这样就带来的一个问题，Job可能要用到的数据该存在哪里？别慌，有JobDataMap，在JobDetail里面。&lt;br /&gt;
+Trigger也想传一些信息？Trigger也有JobDataMap。&lt;br /&gt;
+这个Map，就是JDK的Map接口的一个实现。&lt;/p&gt;
+
+&lt;p&gt;至于Job在execute里面如何access这些信息？execute方法，重载的execute方法有一个参数是context，里面可以拿到包括JobDetail，Trigger等等的一系列相关信息。&lt;/p&gt;
+
+&lt;p&gt;scheduler本身，去scheduler job的时候，必须有JobDetail和Trigger。&lt;br /&gt;
+定义JobDetail和Trigger的时候，要指定name和group，这个(name, group)的组合要是unique的。&lt;/p&gt;
+
+&lt;p&gt;总之，因为是在一个application内的，所以如果有集群，要么就关掉其他的只剩下一个，要么就用消息中间件。&lt;/p&gt;
+</description>
+				<pubDate>Tue, 12 Nov 2019 23:00:00 -0800</pubDate>
+				<link>http://localhost:4000/blog/framework/2019/11/12/quartz-framework.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/framework/2019/11/12/quartz-framework.html</guid>
+			</item>
+		
+			<item>
+				<title>焊接相关准备知识</title>
+				<description>&lt;p&gt;有几个几年前的小电器，正好有时间就焊接了，全忘了，复习 + 记录一下&lt;/p&gt;
+
+&lt;h3 id=&quot;焊接&quot;&gt;焊接：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;电烙铁预热到350度，可以融化焊锡，且不损伤元件&lt;/li&gt;
+  &lt;li&gt;松香可以座位助焊剂：减少虚焊，防腐蚀&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;电阻带色环的非贴片电阻&quot;&gt;电阻：带色环的（非贴片电阻）&lt;/h3&gt;
+&lt;p&gt;一二（三）环（是否有第三环看总共多少）：直接拼接，主要数据&lt;br /&gt;
+棕一红二橙三黄四绿五
+蓝六紫七灰八白九黑零&lt;/p&gt;
+
+&lt;p&gt;下一环：乘数&lt;br /&gt;
+黑 -&amp;gt; 紫：10^0, 10^1, …（或者直接记忆：1后0的个数）；
+金：10^(-1), 0.1；
+银：10^(-2), 0.01&lt;/p&gt;
+
+&lt;p&gt;隔远的最后一环：误差&lt;br /&gt;
+金：5%；
+银：10%
+（也可以用这两个颜色确定方向）&lt;/p&gt;
+
+&lt;h3 id=&quot;电解电容圆柱体黑色&quot;&gt;电解电容：圆柱体，黑色&lt;/h3&gt;
+&lt;p&gt;正级是长方形那边（电路图），长引脚/有正极标示的那边（实物）&lt;br /&gt;
+负极是有阴影那边（PCB装配图），则是有负极套管标志/有压花的那边&lt;/p&gt;
+
+&lt;h3 id=&quot;瓷片电容瓷介电容扁的圆的一般红色蓝色注意与热敏电阻黑区分&quot;&gt;瓷片电容/瓷介电容：扁的，圆的，一般红色/蓝色，注意与热敏电阻（黑）区分&lt;/h3&gt;
+
+&lt;h3 id=&quot;发光二极管&quot;&gt;发光二极管：&lt;/h3&gt;
+&lt;p&gt;正极是三角形那边（电路图。想象三角指向电流方向），长引脚/管体内部金属级较小的一边（实物）&lt;/p&gt;
+
+&lt;h3 id=&quot;二极管&quot;&gt;二极管：&lt;/h3&gt;
+&lt;p&gt;负极是有一圈粗环标志的那一级（实物）&lt;/p&gt;
+
+&lt;h3 id=&quot;按键开关&quot;&gt;按键开关：&lt;/h3&gt;
+&lt;p&gt;一般焊对角线，具体可以用万用表测量哪两个角在按下的时候导通，松开的时候电阻无穷大&lt;/p&gt;
+
+&lt;hr /&gt;
+&lt;h4 id=&quot;参考资料&quot;&gt;参考资料：&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://jingyan.baidu.com/article/ceb9fb10ef5df28cad2ba0a0.html&quot;&gt;如何辨别二极管的正负极&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Fri, 01 Nov 2019 03:49:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/hardware/2019/11/01/welding-related.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/hardware/2019/11/01/welding-related.html</guid>
+			</item>
+		
+			<item>
+				<title>家庭组网相关知识</title>
+				<description>&lt;h3 id=&quot;已有知识&quot;&gt;已有知识：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;学过计算机网络，死记硬背，基本忘光&lt;/li&gt;
+  &lt;li&gt;在直接连接ISP的路由器下设置过服务器，知道内网ip绑定，端口转发（外 -&amp;gt; 内），防火墙等等&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;行文&quot;&gt;行文：&lt;/h3&gt;
+&lt;p&gt;因为观察零碎，知识点散乱，所以暂且从目的开始整理思路，把已知的（观察到的）都列举出来。中途遇到不懂的就查资料，一并付在文中。没耐心可以直接跳到文末看知识点总结和解决方案。&lt;/p&gt;
+
+&lt;h3 id=&quot;目的&quot;&gt;目的：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;扩展Wi-Fi信号&lt;/li&gt;
+  &lt;li&gt;安全地增加内网专用服务器，使其可以使用域名access&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;视觉观察&quot;&gt;视觉观察：&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;弱电箱内网线绞在一起，不敢轻举妄动，所以没法看出这块的结构。没有猫。看不到网线是怎么连的。&lt;/li&gt;
+  &lt;li&gt;有2个路由器（家庭路由器）。&lt;/li&gt;
+  &lt;li&gt;路由器1，WAN口和LAN口网线从水晶头连出后绞在了一起（一个水晶头是4条线，绿绿橙白，还有一个看不清，但是有蓝灰），末端是一个水晶头，连到墙上的唯一网口，没有其他的线/口连接（没看里面具体是什么线连什么）。&lt;/li&gt;
+  &lt;li&gt;网络电视的机顶盒连接墙上网口。&lt;/li&gt;
+  &lt;li&gt;路由器2，WAN口连接墙上的网口，LAN口连接台式电脑。&lt;/li&gt;
+  &lt;li&gt;有2个Wi-Fi，分别在路由器1附近和路由器2附近信号强。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;-&amp;gt; 目的 += 如果可能，只保留一个Wi-Fi，免得手动切换&lt;/p&gt;
+
+&lt;h3 id=&quot;路由器设置&quot;&gt;路由器设置：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;路由器1
+    &lt;ol&gt;
+      &lt;li&gt;WAN口：
+        &lt;ul&gt;
+          &lt;li&gt;WAN口连接类型：宽带拨号上网（PPPoE：运营商分配宽带用户名和密码，通过用户名和密码进行用户身份认证）&lt;/li&gt;
+          &lt;li&gt;账号密码信息：有valid值&lt;/li&gt;
+          &lt;li&gt;拨号模式：自动选择拨号模式&lt;/li&gt;
+          &lt;li&gt;WAN口速率设置：自动协商（有其他选项：100M半双工，100M全双工等等）&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;LAN口：
+        &lt;ul&gt;
+          &lt;li&gt;LAN口IP设置：自动
+            &lt;ul&gt;
+              &lt;li&gt;LAN-WAN级联或WDS无线桥接时，建议保持为自动；LAN-LAN级联时，建议选择为手动，修改ip地址和主路由器在同一网段且不冲突。eg. 主：192.168.1.1，副：192.168.1.X，x=[2, 254]。
+                &lt;ul&gt;
+                  &lt;li&gt;LAN-WAN级联：从主路由器分出来的网线连接到路由器的WAN口，电脑通过有线连接，只需要把网线连接到任意空闲的LAN口即可上网。
+                    &lt;ul&gt;
+                      &lt;li&gt;主、副路由器下的终端处于不同的局域网，无法互访&lt;/li&gt;
+                      &lt;li&gt;主、副路由器的无线名称和密码设置相同时，也不能实现无线漫游，主路由器无法实现对副路由器的终端设置带宽控制、上网控制等功能&lt;/li&gt;
+                      &lt;li&gt;路由器一般都有LAN-WAN冲突检测的功能&lt;/li&gt;
+                      &lt;li&gt;使用环境推荐：对于网络结构复杂、终端数量较多的环境（例如酒店、旅馆等环境）建议使用LAN-WAN级联，将大的局域网分割为小的局域网，可以有效防止广播风暴、ARP攻击等&lt;/li&gt;
+                      &lt;li&gt;具体设置：两个子网用路由器级联：路由器A的WAN口接外网，路由器A的子网为192.168. 1.0，路由器A的地址为192.168.1.1，路由器B的WAN端口接路由器A的一个lan端口。路由器B的地址设为192.168.X.1（X为除去1之外的任何数），那么路由器B所连的字段为192.168.X.0，然后在路由器A的静态路由表中设置将发往192.168.X.0的数据网交由网关192.168.1.1转发。这样，两个子网可以共享外网。&lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li&gt;LAN-LAN级联：
+                    &lt;ul&gt;
+                      &lt;li&gt;此时第二个路由器相当于交换机，所有终端都处于同一个局域网中，可以实现互访&lt;/li&gt;
+                      &lt;li&gt;当主、副路由器设置相同的无线名称和密码时，可以实现无线漫游&lt;/li&gt;
+                      &lt;li&gt;主路由器可以对副路由器下连接的终端实现带宽控制等网络权限限制&lt;/li&gt;
+                      &lt;li&gt;使用环境推荐：对于网络结构简单，终端数量较小的环境（例如小型办公环境、普通家用环境）建议使用LAN-LAN级联&lt;/li&gt;
+                      &lt;li&gt;具体设置：两个路由器同处于一个子网：路由器A接外网，路由器B的其中一个LAN口连接路由器A的一个LAN口，此时路由器B仅当做交换机的功能，也就是只实现了数据链路层的交换，屏蔽了网络层的功能。连接路由器B的其余的LAN口的PC需要手动设置IP（为什么？？），所设的IP和路由器A的IP处于同一子网就可以了。同样可以共享外网，并且处于同一局域网。&lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li&gt;WDS桥接：WDS（Wireless Distribution System）桥接功能可以将无线路由器通过无线方式连接到已有信号。
+                    &lt;ul&gt;
+                      &lt;li&gt;多台路由器都在同一局域网，电脑连接任何路由器的LAN口都可以上网，无线终端连接信号后可以漫游，达到信号增强的目的。&lt;/li&gt;
+                      &lt;li&gt;星形拓扑：A - B; A - C; A - D; …&lt;/li&gt;
+                      &lt;li&gt;直线性拓扑：A - B - C…建议不超过三级（三级以上，不能保证网络的稳定性和无线速率）&lt;/li&gt;
+                      &lt;li&gt;WDS桥接也可以组成树形扩展网络，具体的网络扩展方式根据实际需求选择。简单讲，WDS桥接的环境中，无线路由器可以理解为交换机，所有路由器间通过无线进行连接，无需连接网线。&lt;/li&gt;
+                      &lt;li&gt;避免环路：设置主、副路由器进行WDS桥接前，请勿使用网线连接两个路由器，避免形成环路（会导致广播风暴）。如果为主、副路由器均为双频路由器，5GHz和2.4GHz不能同时进行WDS桥接。&lt;/li&gt;
+                      &lt;li&gt;副路由器网络参数：
+                        &lt;ul&gt;
+                          &lt;li&gt;DHCP服务器：需要按指导流程关闭副路由器的DHCP服务器（结合实际需求），避免DHCP服务器冲突。如有多台副路由器，仅保留一个DHCP服务器。&lt;/li&gt;
+                          &lt;li&gt;管理IP地址：设置WDS桥接完成后，请确保副路由器的IP地址与主路由器不冲突。为了便于管理，建议将副路由器的管理地址设置为与主路由器（连接宽带的路由器）同一网段。eg. 192.168.1.1, 192.168.1.2, 192.168.1.3…&lt;/li&gt;
+                        &lt;/ul&gt;
+                      &lt;/li&gt;
+                      &lt;li&gt;WDS桥接设置中，将副路由器的无线SSID、密码设置为与主路由器相同，则可以实现移动过程中自动漫游。&lt;/li&gt;
+                      &lt;li&gt;WDS桥接的漫游网络中，正常情况下只能搜到一个（信号最强），也可能有极少数终端会搜到多个相同名字的信号。移动过程中会实现自动切换（切换机制取决于无线终端），无需手动操作。&lt;/li&gt;
+                      &lt;li&gt;主副路由器中，只要有一个支持WDS桥接功能即可，支持WDS桥接功能的路由器作为副路由器，扫描桥接另一个路由器即可。主、副路由器可以为不同品牌、不同型号的路由器。&lt;/li&gt;
+                    &lt;/ul&gt;
+                  &lt;/li&gt;
+                  &lt;li&gt;无线路由器配置的wifi则相当于LAN端口&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;IP地址：192.168.0.1
+            &lt;ul&gt;
+              &lt;li&gt;在WDS无线桥接或LAN-LAN级联时，需要修改LAN口IP地址和主路由器同一网段且不冲突的IP地址。例如：主路由器的LAN口IP地址为192.168.1.1，副路由器的LAN口IP地址修改为192.168.1.X（X=2-254）。&lt;/li&gt;
+              &lt;li&gt;在LAN-WAN级联组网方式时，需要修改LAN口IP地址和主路由器不同网段的IP地址，例如：主路由器的LAN口IP地址为192.168.1.1，副路由器的LAN口IP地址修改为192.168.X.1。&lt;/li&gt;
+              &lt;li&gt;IP地址不能与上级网络处于同一网段中（路由器的IP地址和LAN口的IP地址段不能相同，即前三段不能完全相同）&lt;/li&gt;
+              &lt;li&gt;同一网段的可以直连&lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;子网掩码：225.225.225.0&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;DHCP服务器：
+        &lt;ul&gt;
+          &lt;li&gt;地址池开始地址：192.168.0.100&lt;/li&gt;
+          &lt;li&gt;地址池结束地址：192.168.0.199&lt;/li&gt;
+          &lt;li&gt;网关：0.0.0.0
+            &lt;ul&gt;
+              &lt;li&gt;路由器的IP地址和默认网关必须在同一地址段内&lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;首选DNS服务器：0.0.0.0&lt;/li&gt;
+          &lt;li&gt;备选DNS服务器：0.0.0.0&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;UPnP设置：&lt;/p&gt;
+
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;应用描述&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;外部端口&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;协议类型&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;内部端口&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;IP地址&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;状态&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;yfnet&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;20118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;UDP&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;20118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;192.168.0.118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;启用&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;yfnet&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;20118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;TCP&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;20118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;192.168.0.118&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;启用&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;路由功能：&lt;/p&gt;
+
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;目的网络地址&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;子网掩码&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;下一跳地址&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;接口&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;192.168.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;255.255.255.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;LAN/WLAN&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;(运营商网关？此处省略)&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;255.255.255.255&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;WAN&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;(运营商网关？此处省略)&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;WAN&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;0.0.0.0表示默认缺省路由，即当前路由表中没有找到完全匹配的路由的时候所对应的路由&lt;/li&gt;
+          &lt;li&gt;在路由表中查找”对应”表项是通过把路由表表项的IP地址的子网掩码与目的地址的子网掩码进行比较来实现的.所以,只要把”默认路由”的子网掩码设为0(在路由表中即系0.0.0.0/0这一项),则”默认路由”一定可以目的地址”对应”.&lt;/li&gt;
+          &lt;li&gt;网关0.0.0.0表示不需要经过网关（？）&lt;/li&gt;
+          &lt;li&gt;看到后面发现，“运营商网关”也是个内网地址（100.65.xxx.xxx），但不是一个网段的（后文有厘清这两个概念）。&lt;/li&gt;
+          &lt;li&gt;但是还是不明白为什么要下一跳0.0.0.0？？不可以直接省略嘛？&lt;/li&gt;
+          &lt;li&gt;为什么会是255.255.255.255？
+            &lt;ul&gt;
+              &lt;li&gt;终端通过PPPOE或是PPP播号上网时，PPP（PPPOE）是二层协议，驱动会记住分配下来的IP地址与PPP SERVER端地址与MAC（或是这个地址自己设定），收报文肯定是没有问题的，发送报文时，终端协议栈通过直连路由或是默认路由，甚至在子网掩码为全 f 的情况下，下一跳是它自己，这个报文就可以往外发，当驱动层（准确说应该是链路层）收到这个报文时，一检测是哪个IP的，直接就发到记下的PPP SERVER 的 MAC。简单的说，PPPOE拨号以后，PC就像一个环回口一样，既然路由器的环回口可以配置掩码255.255.255.255，那么，PC也能获取一样的掩码。&lt;/li&gt;
+              &lt;li&gt;WAN口使用255.255.255.255 网络掩码不会浪费IPv4地址资源。
+                &lt;ul&gt;
+                  &lt;li&gt;无线路由器WAN拨号，由 PPPoE server ，准确地说PPP server 来负责双向路由的通达，用户首先通过PPPoE 广播找到 PPPoE server，及其MAC地址，然后 PPPoE 封装PPP，到达PPP server , 分配 x.x.x.x/32 主机路由给用户WAN口，同时动态生成一条host route，like x.x.x.x/32  next-hop VAx ，VA 是 virtual access 的缩写，是一个软件接口，通过这个软件接口可以到达 x.x.x.x/32，是下行路由通达。&lt;/li&gt;
+                  &lt;li&gt;同理在客户端WAN口绑定分配的IP x.x.x.x/32，也会产生一条缺省路由，like 0.0.0.0 0.0.0.0  next-hop WAN，只要不是本地的流量，都扔到WAN口就可以到达PPPoE server，PPPoE destination MAC 填写 PPPoE server MAC 即可，然后到达 PPP server，然后通过 Internet gateway 到达 Internet，此举可以保证上行路由可达。&lt;/li&gt;
+                  &lt;li&gt;PPP点对点&lt;/li&gt;
+                  &lt;li&gt;普通客户往往并不需要子网广播业务，于是部分ISP采用这种掩码把x.x.x.255等地址分配出去。&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;Wi-Fi：
+ 开启，2.5G和5G 2个信道，SSID一样&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;路由器2:
+    &lt;ol&gt;
+      &lt;li&gt;WAN口：
+        &lt;ul&gt;
+          &lt;li&gt;WAN口连接类型：自动获得IP地址&lt;/li&gt;
+          &lt;li&gt;IP地址：192.168.0.106&lt;/li&gt;
+          &lt;li&gt;子网掩码：255.255.255.0&lt;/li&gt;
+          &lt;li&gt;网关：192.168.0.1
+            &lt;ul&gt;
+              &lt;li&gt;上一级路由器的LAN口地址&lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;DNS服务器：192.168.0.1，0.0.0.0&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;LAN口：
+        &lt;ul&gt;
+          &lt;li&gt;IP设置：自动（推荐）&lt;/li&gt;
+          &lt;li&gt;IP地址：192.168.1.1&lt;/li&gt;
+          &lt;li&gt;子网掩码：255.255.255.0&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;DHCP服务器：
+        &lt;ul&gt;
+          &lt;li&gt;地址池开始地址：192.168.1.100&lt;/li&gt;
+          &lt;li&gt;地址池结束地址：192.168.1.199&lt;/li&gt;
+          &lt;li&gt;网关：0.0.0.0&lt;/li&gt;
+          &lt;li&gt;首选DNS服务器：0.0.0.0&lt;/li&gt;
+          &lt;li&gt;备选DNS服务器：0.0.0.0&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;系统路由表：&lt;/p&gt;
+
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;目的网络地址&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;子网掩码&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;下一跳地址&lt;/th&gt;
+              &lt;th style=&quot;text-align: center&quot;&gt;接口&lt;/th&gt;
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;192.168.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;255.255.255.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;LAN/WLAN&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;(运营商网关？此处省略)&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;255.255.255.255&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;WAN&lt;/td&gt;
+            &lt;/tr&gt;
+            &lt;tr&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;0.0.0.0&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;(运营商网关？此处省略)&lt;/td&gt;
+              &lt;td style=&quot;text-align: center&quot;&gt;WAN&lt;/td&gt;
+            &lt;/tr&gt;
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;在宽带路由器中存在一条默认路由，它的作用是将局域网内主机发往外网的信息包到达LAN口网关后，将信息包转发到WAN口的网关，以此实现内网主机共享网络的需要。&lt;/li&gt;
+          &lt;li&gt;下面设备访问时，会把目标IP包发到LAN口，路由器接受后检查，如果属于本网段，则直接转发到对应主机；不是就转发给WAN口。&lt;/li&gt;
+          &lt;li&gt;WAN口确认不属于本网段后，转发给上级路由器（Gateway），此处的0.0.0.0的下一跳地址&lt;/li&gt;
+          &lt;li&gt;为何到192.168.0网段不需要经过网关？&lt;/li&gt;
+          &lt;li&gt;Gateway 0.0.0.0 不需要经过网关&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;Wi-Fi：
+ 开启，2.5G和5G 2个信道，SSID一样&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 总之，就是加了个副路由器，副路由器自己分配子网ip（实际上是同层），并且很巧妙地避开同样的ip，避免ip冲突&lt;/p&gt;
+
+&lt;h3 id=&quot;终端设置&quot;&gt;终端设置：&lt;/h3&gt;
+&lt;p&gt;台式电脑连接路由器2的LAN口可以上网。&lt;br /&gt;
+连接墙上网口可以直接上网（查看ip，发现是路由器2分配的）。&lt;br /&gt;
+连接两个Wi-Fi均可以直接上网。&lt;/p&gt;
+
+&lt;h3 id=&quot;询问网络业者得到结构相关的解释&quot;&gt;询问网络业者，得到结构相关的解释：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;路由器之间是级联！路由器1是主路由器！路由器2是副路由器&lt;/li&gt;
+  &lt;li&gt;因为路由器出厂的IP地址是一样的！所以修改一个路由器的LAN口地址即可实现级联&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 路由器LAN口地址，就是子网内access路由器的地址，这里为了防止ip冲突，要设置成不一样的&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;（对于扩展信号）无线桥接是可以的！但信号有衰减！（取决于设备本身）！&lt;/li&gt;
+  &lt;li&gt;主路由器到副路由器之间可以用有线！就是级联！也可以采用无线桥接！&lt;/li&gt;
+  &lt;li&gt;主路由器WAN口接光猫！然后主路由器的lan口接副路由器的WAN口和LAN口都可以
+    &lt;ul&gt;
+      &lt;li&gt;接副路由器的WAN口就是副路由器作为一个单独路由器！自身可以分配连上的终端IP地址！&lt;/li&gt;
+      &lt;li&gt;接副路由器的LAN口就是要靠主路由器分配IP地址！本身只做信号透传！&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 如果全接LAN口就是把路由器当作交换机使用（但是需要关闭副路由器的DHCP服务器以避免同一网络下有多个DHCP服务器，并且修改LAN口地址避免ip冲突：改为局域网段内ip，但是要避开主路由的LAN口IP，和一些可能分配到的ip，比如设置成192.168.0.254。但是Wi-Fi呢？还是会有2个Wi-Fi，但是处于一个子网下，均由主路由器分配子网ip？？可以设置成同样的SSID，这样用户就不需要额外手动切换了。channel可以用auto，或者如果知道的话，可以指定）&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;我们一般做的最多的方式就是2个设备独立使用！但采用级联方式！这样就可以避免内网地址重复或者地址冲突&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 就是副路由器不做AP，也路由的情况。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;你要内网建立服务器！必须在路由器内部添加路由条目！因为默认不在一个网段是不能互相访问的！做了路由才可以比如192.168.1.2 和192.168.1.3这就是一个网段，这样默认可以互相访问；如果192.168.1.2 和192.168.2.2这就不是一个网段！要互访需要添加路由&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 255.255.255.0，转换成二进制和IP AND，分别得到网络标识：192.168.1.0，192.168.2.0，不同。顺便：主机标识是子网掩码取饭AND IP，分别得到：0.0.0.2和0.0.0.2。大意就是ip地址和子网掩码，可以得到网段和主机两个信息。同一网段内可以直接access，不用NAT通信。总之，要添加路由才能访问不同网段。关于内网（之前一直没弄清，和网段相混淆的概念），参考资料：“在互联网的世界里面，为了规避这种情况，就预留了几个网段做为约定的私网网段，比如我们常见的10/8，172.16/12，192.168/16。也就是说，只要你的IP是这几个网段的，大家就都知道 你肯定是在内网，而不会去公网寻找你的地址。必须背一个网关隔离在私有域内。所有使用这些地址的终端，要和网关外的主机通信，必须用NAT，PROXY或者隧道技术进行地址转换，以使得对方回复过来的数据包可以在Internet上转发”。有notation: \24，代表前24位（二进制的）是网络号，后8位是主机号。子网掩码是网络号全1，主机号全0，用以AND获取网络号（网段）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;这个是因为主线进来的位置可能在客厅！然后有一根线到书房！但路由器需要放在书房！所以一根网线分了2组！4芯一组！一组连接光猫！一组返回到其他需要上网的设备上了！&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 也就是说，因为线已经在墙里面了，所以不好动，只能这样接2根线&lt;/p&gt;
+
+&lt;p&gt;懵懵懂懂，没有彻底弄清楚。对于自己的问题，一个个解决：&lt;/p&gt;
+
+&lt;h3 id=&quot;主路由器wan口和lan口连接在一起是怎么回事&quot;&gt;主路由器wan口和lan口连接在一起，是怎么回事？&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;家中的网线一般是8芯的，100Mbps的连接方式使用了4芯，1000Mbps接法使用了8芯网线；百兆网络只需要1,2,3,6四芯即可，两芯发送数据，两芯接收数据，其余的四芯可以用于连接另一个网络。&lt;/li&gt;
+  &lt;li&gt;其它LAN口下面的设备即能通过路由上网,也能直通猫&lt;/li&gt;
+  &lt;li&gt;电脑接LAN口,能直接上网,电脑又能PPPOE拔号,而不需要去重新接线&lt;/li&gt;
+  &lt;li&gt;这样的接法前提是你小区机箱的交换机做好了端口隔离。否则，你就相当于跟整个居民楼共享了你家的网，安全和网速都有大问题。&lt;/li&gt;
+  &lt;li&gt;将WAN口和LAN口相连，剩余的LAN口和无线之间的关系就会非常有意思，他们既是LAN-WAN的关系（路由/内网外网），也是LAN-LAN的关系（交换/局域网）。&lt;/li&gt;
+  &lt;li&gt;这个是因为主线进来的位置可能在A（别的地方）！然后有一根线到B（现在的地方）！但路由器需要放在B！所以一根网线分了2组！4芯一组！一组连接光猫！一组返回到其他需要上网的设备上了！&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;所以wan口和lan口到底有什么区别&quot;&gt;所以WAN口和LAN口到底有什么区别？&lt;/h3&gt;
+&lt;p&gt;就是……理解成不同的接口？路由器可以把外界的网路和内网连接（并且DHCP服务器给内网分配IP）。外界网路连接WAN，内网连接LAN，路由器充当中间层。主要目的是节约有限的ip资源（内网ip可以复用）。更底层一点的逻辑：VLANs (Virtual Lan)可以把物理网络分成不同的logical segments as if they are actually seperate independent networks. 必要的时候，路由器可以路由，并且把这些VLANs连接在一起。设置的时候会发现有多余的port，是internal port，不连接外界；在配置文件中必须要卸载每个VLan中；*表示默认VLAN，必须要是LAN VLAN。&lt;/p&gt;
+
+&lt;h3 id=&quot;家里网络究竟是什么结构&quot;&gt;家里网络究竟是什么结构？&lt;/h3&gt;
+&lt;p&gt;外网，猫？
+主路由，一个Wi-Fi是由这个路由管理的；副路由接在主路由下，由主路由分配ip（并没有绑定）。&lt;br /&gt;
+尝试：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;使用LLTD链路层发现协议查看网络拓扑图：
+  并没有得到什么有益的信息&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;wds中继repeater桥接bridge以及相关&quot;&gt;WDS中继(Repeater)，桥接（Bridge），以及相关&lt;/h3&gt;
+&lt;p&gt;有两种意见：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;桥接不做第二次的DHCP，在同一个网段
+    &lt;ul&gt;
+      &lt;li&gt;WDS桥接是一种特殊的桥接方式，必须修改主路由器的配置，让其工作在 AP+WDS 模式下，副路由器才能使用 WDS 与之相连，同时副路由器也能作为 AP。同样可以将主路由器和副路由器置于同一 IP 网段，确切说它们位于同一冲突域。&lt;/li&gt;
+      &lt;li&gt;桥接：bridge。就是不新分配子网，用主路由器的DHCP功能。“多数是指在两个网络在数据链路层面被连接起来，都处在同一个IP局域网内。”&lt;/li&gt;
+      &lt;li&gt;是否桥接，取决于方便性，以及安全性需求（桥接，则在一个网段，都可以互相访问）&lt;/li&gt;
+      &lt;li&gt;Client, Repeater使得副路由器工作在第三层，而Client Bridge, WDS, Repeater Bridge使副路由器工作在第二层&lt;/li&gt;
+      &lt;li&gt;路由器本身是一个三层设备，如果让它工作在二层的话，它的三层能力就全部失效，无法路由，无法NAT，也无法提供流量管理等等。所以在配置无线路由器的时候，明确一下工作在那一层还是很有必要的。&lt;/li&gt;
+      &lt;li&gt;“层”的概念：桥接则是：各接入点处于同一层——不同（二层）物理网段下的相同（三层）逻辑网络。&lt;/li&gt;
+      &lt;li&gt;没有IP的时候，许多交换机可以划分vlan。一个vlan内部可以互相通讯，不同vlan没法儿通讯。&lt;/li&gt;
+      &lt;li&gt;不同vlan之间通讯，叫做bridge。&lt;/li&gt;
+      &lt;li&gt;wisp就是以无线的方式一级路由接二级的wan口，二级路由再做一次nat，一级路由里只看得到二级路由的mac，这种方式比无线桥接更隐蔽。无线桥接就是以无线的方式上级路由的lan接二级的lan,这种方式二级路由相当于无线交换机，这种方式连在二级路由的设备一级路由都看得到，不够隐蔽而且二级路由的nat功能都没法用，qos npnp,ss,adbyby等等。&lt;/li&gt;
+      &lt;li&gt;关键：关系处于哪一层（2/3）——是否有NAT，谁负责IP分配，是否彼此可见，有线/无线方式。
+        &lt;ol&gt;
+          &lt;li&gt;设备关系在网络模型的哪一层（2层或3层），即，交换或路由。涉及：是否有NAT，(W)WAN/(W)LAN或(W)LAN1+(W) LAN2，谁负责IP分配DHCP，终端（相交于设备，或称为客户端/主机）是否彼此可见等；&lt;/li&gt;
+          &lt;li&gt;是否作为客户端（Client）与/或作为无线接入点（AP）/有线接口。&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;中继只是简单传递信号，所以在同一个网段？
+    &lt;ul&gt;
+      &lt;li&gt;“中继器”这个概念为物理层设备（对物理层的比特流进行单纯转发），至于最近几年通过各种方式在数据链路层实现类似于中继这种功能，那是各个厂商的事&lt;/li&gt;
+      &lt;li&gt;中继器，是repeater的意译，直译就是重复器。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;所以？？不纠结名词了，就看怎么接的吧……&lt;/p&gt;
+
+&lt;h3 id=&quot;透穿&quot;&gt;透穿&lt;/h3&gt;
+&lt;p&gt;指与传输网络的介质、调制解调方式、传输方式、传输协议无关的一种数据传送方式。&lt;br /&gt;
+这就好比快递邮件，邮件中间有可能通过自行车、汽车、火车、飞机的多种组合运输方式到达您的手上，但您不用关心它们中间经历了哪些。&lt;/p&gt;
+
+&lt;p&gt;为什么要透传呢？&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;透传一般都是用来读取远程的串口数据
+    &lt;ul&gt;
+      &lt;li&gt;例如：网吧内每个上网者都要刷身份证才能上网，但身份证数据库不可能放在每个网吧内。所以就将读卡器的串口数据通过透传回传到公安局，在公安局的平台上来比对身份证号码。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt; 大概就是通过接口调用别人服务的感觉，别人的服务对于调用者透明，所以是“穿透”&lt;/p&gt;
+
+&lt;h3 id=&quot;发现24g和5g的ssid一样是否会有什么影响&quot;&gt;发现2.4G和5G的SSID一样，是否会有什么影响？&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;不需要用户选择具体网络（也无法手工选择），而是终端的网卡选择&lt;/li&gt;
+  &lt;li&gt;首次连接的时候，依靠终端自己的行为来决定是连2.4G还是5G。
+    &lt;ul&gt;
+      &lt;li&gt;有的支持双频的设备首次连接2.4G后，永不连接5G&lt;/li&gt;
+      &lt;li&gt;有的支持5G就连了5G，但是即使之后信号变差（5G衰减快），也不会切换&lt;/li&gt;
+      &lt;li&gt;IOS默认优先5G，无法连接时才会连接2.4G&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;路由器wan口-ip和lan口-ip&quot;&gt;路由器wan口 ip和lan口 ip？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;wan口ip：就是运营商/上级网络给的ip&lt;/li&gt;
+  &lt;li&gt;lan口ip：就是此路由器在自己分配的子网中的ip&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;华为手机自动切换wi-fi为什么&quot;&gt;华为手机自动切换Wi-Fi，为什么？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;（自己的理解）&lt;/strong&gt;可能是检测到一个信号弱，就接入了信号强的那个&lt;/p&gt;
+
+&lt;h3 id=&quot;路由器是什么东西到底在网络的哪一层&quot;&gt;路由器是什么东西，到底在网络的哪一层？&lt;/h3&gt;
+
+&lt;h3 id=&quot;natnetwork-address-translation&quot;&gt;NAT（Network Address Translation）：&lt;/h3&gt;
+&lt;p&gt;网络地址转换，NAT能将其本地地址转换成全球IP地址（内网要想和外部Internet链接就需要转换成公网唯一IP与外部链接，需要使用路由NAT转换）。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;静态转换：将内部网络的私有IP地址转换为公有IP地址，IP地址对是一对一。&lt;/li&gt;
+  &lt;li&gt;动态转换是指将内部网络的私有IP地址转换为公用IP地址时，IP地址是不确定的，是随机的。&lt;/li&gt;
+  &lt;li&gt;端口多路复用（Port address Translation,PAT)，内部网络的所有主机均可共享一个合法外部IP地址实现对Internet的访问，从而可以最大限度地节约IP地址资源。同时又可隐藏网络内部的所有主机，有效避免来自internet的攻击。因此，目前网络中应用最多的就是端口多路复用方式。&lt;/li&gt;
+  &lt;li&gt;应用程序级网关技术（Application Level Gateway）ALG：传统的NAT技术只对IP层和传输层头部进行转换处理，ALG它能对这些应用程序在通信时所包含的地址信息也进行相应的NAT转换。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;代理&quot;&gt;代理：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;正向代理：隐藏真实的请求客户端。eg. 翻墙服务器&lt;/li&gt;
+  &lt;li&gt;反向代理：隐藏真实的请求服务端。eg. nginx做load balance server&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;ddns&quot;&gt;DDNS：&lt;/h3&gt;
+&lt;p&gt;动态域名解析，是将用户的动态IP地址映射到一个固定的域名解析服务上。DDNS捕获用户每次变化的IP地址，然后将其与域名相对应，这样域名就可以始终解析到非固定IP的服务器上，互联网用户通过本地的域名服务器获得网站域名的IP地址，从而可以访问网站的服务。&lt;/p&gt;
+
+&lt;h3 id=&quot;网络信号不强的解决方案&quot;&gt;网络信号不强的解决方案：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;直接WAN-LAN接法通过网线/无线，用新的路由器扩展。SSID和密码如果设置成一样那就可以不用手动转换。&lt;/li&gt;
+  &lt;li&gt;使用具有wds功能的无线AP桥接到出口路由器&lt;/li&gt;
+  &lt;li&gt;改架构：出口路由器 - PoE交换机（统一为面板AP提供弱电） - AC无线控制器（统一下发配置），面板式AP（无线有线电源都集成在内）&lt;/li&gt;
+  &lt;li&gt;网线也有超五类（CAT5e）、六类（CAT6）等的区别，传输能力不同（100M，1000M，…）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;总结和解决方案&quot;&gt;总结和解决方案：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;现有结构是，主路由，下接子路由，均有DHCP功能，2个网段&lt;/li&gt;
+  &lt;li&gt;设置成桥接（子路由不做DHCP，且LAN口ip不与主路由重复），Wi-Fi的SSID和密码和主路由设置成一样的&lt;/li&gt;
+  &lt;li&gt;内网服务器参见上文，&lt;a href=&quot;/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html&quot;&gt;树莓派从零开始设置记录&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;关于暴露端口，因为运营商给的也是内网地址不知道会不会出问题，路由器太低端功能也不够，考虑到没什么安全知识，作罢&lt;/li&gt;
+  &lt;li&gt;关于内网域名访问，需要自建DNS服务器，并且修改需要使用的机器的DNS服务器（或者直接修改路由器的）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+&lt;h4 id=&quot;参考资料&quot;&gt;参考资料：&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/30584853&quot;&gt;路由器wan口和lan口连接在一起 是什么机制和原理？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://service.tp-link.com.cn/detail_article_3241.html&quot;&gt;如何修改路由器LAN口IP地址？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://service.tp-link.com.cn/detail_article_1059.html&quot;&gt;[WDS桥接功能] 如何扩展无线网络？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://service.tp-link.com.cn/detail_article_572.html&quot;&gt;三类常见上网方式介绍&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/redeg/article/details/3017321&quot;&gt;TP-LINK路由器两种不同的级联方法&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/20738115&quot;&gt;LAN口和WAN口的区别是什么？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://product.pconline.com.cn/itbk/wlbg/network/1802/10851495.html&quot;&gt;多个路由器级联怎么设置 路由器串接级联接线设置【详解】&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://service.tp-link.com.cn/detail_article_89.html&quot;&gt;多台路由器如何串联（级联）？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/Dallin0408/article/details/60961148&quot;&gt;通信网络中的透传到底什么意思？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/26477444&quot;&gt;双频ac的路由器2.4G和5G的SSID能不能一样?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://ask.csdn.net/questions/259502&quot;&gt;救命啊，大神！！用markdown写的文档，使用jekyll生成博客，然而表格不能在博客正常显示？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/27482090&quot;&gt;小户型家庭网络设计案例&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/24387774&quot;&gt;家庭网络系统规划及布线指南&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://jingyan.baidu.com/article/a501d80c0eb7b8ec630f5ea8.html&quot;&gt;怎样使用LLTD链路层发现协议查看网络拓扑图&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/zhangguo5/article/details/77848658&quot;&gt;一分钟实现内网穿透（ngrok服务器搭建）&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.jianshu.com/p/a1ab0b30f42b&quot;&gt;教你读懂Linux路由表&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=v_wz0zQngnA&quot;&gt;Making use of OLD ROUTER as Wifi REPEATER | SWITCH | Wifi EXTENDER&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://baike.baidu.com/item/%E5%90%8C%E4%B8%80%E7%BD%91%E6%AE%B5&quot;&gt;同一网段&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/27714563&quot;&gt;什么是外网IP和内网IP?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/Qiuzhongweiwei/article/details/80172270&quot;&gt;子网掩码,如255.255.255.0\24， 24代表什么?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhidao.baidu.com/question/143815669.html&quot;&gt;192.168.0.1/24怎么算子网掩码？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/22642189&quot;&gt;怎么扩展无线路由器信号？（书房路由器覆盖不到卧室）&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/20380724&quot;&gt;无线网络的中继和桥接有什么区别？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.zhihu.com/question/48691846&quot;&gt;子网掩码为255.255.255.255是什么情况？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/santtde/article/details/86765506&quot;&gt;路由器工作原理&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/MyySophia/article/details/78869731&quot;&gt;网关和默认路由0.0.0.0&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.52itstyle.vip/archives/2782/&quot;&gt;公司内网搭建代理DNS使用内网域名代替ip地址&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Fri, 25 Oct 2019 20:47:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/infrastructure/2019/10/25/family-network-related.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/infrastructure/2019/10/25/family-network-related.html</guid>
+			</item>
+		
+			<item>
+				<title>树莓派从零开始设置记录</title>
+				<description>&lt;h3 id=&quot;已有知识&quot;&gt;已有知识：&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;学过中学物理（电流电路……）&lt;/li&gt;
+  &lt;li&gt;玩过51单片机（只会用C点亮LED灯）&lt;/li&gt;
+  &lt;li&gt;会C，Python和Bash&lt;/li&gt;
+  &lt;li&gt;了解了一点SSH&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;过程&quot;&gt;过程：&lt;/h3&gt;
+&lt;p&gt;在查资料的过程中，大概理解了，树莓派就是一个性能尚可的带了很多接口的ARM构架的微型主机。server，只是一个能发挥其部分作用的应用方向。好像更多的是当作智能硬件来用？&lt;/p&gt;
+
+&lt;p&gt;那么首先，需要操作系统：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;在&lt;a href=&quot;https://www.raspberrypi.org/&quot;&gt;官网&lt;/a&gt;下载基于Debian的Linux操作系统&lt;a href=&quot;https://www.raspberrypi.org/downloads/raspbian/&quot;&gt;Raspbian&lt;/a&gt;
+    &lt;ul&gt;
+      &lt;li&gt;尝试下载zip，但是速度太慢 -&amp;gt; 试着下载种子 -&amp;gt; 发现没有种子下载器 -&amp;gt; do research，Mac上多人推荐Folx -&amp;gt; 下载Folx本身速度很慢 -&amp;gt; 算了，直接从官网下载最精简版Raspbian Buster Lite的zip。&lt;/li&gt;
+      &lt;li&gt;检查checksum，官网给出的是SHA-256:a50237c2f718bd8d806b96df5b9d2174ce8b789eda1f03434ed2213bbca6c6ff，在终端运行指令:
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;download&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;shasum &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 256 2019-09-26-raspbian-buster-lite.zip&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;download&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%% *&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;a50237c2f718bd8d806b96df5b9d2174ce8b789eda1f03434ed2213bbca6c6ff&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo &lt;/span&gt;1 &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo &lt;/span&gt;0 	&lt;span class=&quot;c&quot;&gt;# %% return content of the variable with the longest occurrence of substring deleted from the back of the variable. ' *' matched ' 0orMoreChars'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+        &lt;p&gt;确定符合。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;烧录系统：
+    &lt;ul&gt;
+      &lt;li&gt;下载&lt;a href=&quot;https://www.balena.io/etcher/&quot;&gt;balenaEtcher&lt;/a&gt;（Windows上好像是用Win32DiskImager比较多）&lt;/li&gt;
+      &lt;li&gt;解压zip文件，得到img镜像&lt;/li&gt;
+      &lt;li&gt;micro SD卡转接插入电脑，选择，烧录
+        &lt;ul&gt;
+          &lt;li&gt;最后烧录成2个分区，FAT32的root分区（内核），以及EXT4分区（操作系统）（Window上会显示磁盘没有格式化：系统不认识；Mac压根不会显示）&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;此处，发现其实SD卡内本来烧录好了full的系统，但是我直接写了，并没有先格式化，不知道会对后续有何影响&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;检查系统烧录情况：
+    &lt;ul&gt;
+      &lt;li&gt;用micro HDMI连上支持HDMI口的显示屏&lt;/li&gt;
+      &lt;li&gt;连接电源，树莓派自动开机（暂时不连其他外设，以免开机失败）&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;确认系统正常工作&lt;/p&gt;
+
+&lt;p&gt;至此，树莓派就变成了一台Linux主机。&lt;/p&gt;
+
+&lt;p&gt;因为还买了外壳，所以接下来装外壳：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;壳组转本身按照模糊的视频教程，以及商品照片来就可以，参考每个板的凸凹，以及合适程度确认&lt;/li&gt;
+  &lt;li&gt;附带了散热片
+    &lt;ul&gt;
+      &lt;li&gt;按照大小，分别装在CPU（风扇下方，方形的），内存芯片（中间，最长的），USB管理芯片（靠USB口，方的）上&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;附带了一个风扇，带红白线，到一个头上
+    &lt;ul&gt;
+      &lt;li&gt;风扇电源红线（接正极）那边接在离板中心近的5v power的GRIO口上（GRIO口横排在上，上排的左边数起第2个口。物理引脚BOARD编码：4），黑线那边（接负极）自然地卡在旁边的地线GND（GRIO口横排在上，上排的左边数起第3个口。物理引脚BOARD编码：6）上，形成5V电压（电势差）&lt;/li&gt;
+      &lt;li&gt;风扇有logo的那边朝外，因为想从CPU抽热气（给的风扇logo面是凹，凸进凹出。可以想象凹的那面“舀”空气，把空气往外送/让空气变稀薄从而高压吹低压）（过后可以统计温度数据，最终决定装入风还是出风）&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;进行server所需的设置：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;SSH设置：（自2016年9月开始，raspberry默认关闭ssh连接）
+    &lt;ul&gt;
+      &lt;li&gt;在micro SD卡的boot分区里新建一个名为“ssh”的空白文件&lt;/li&gt;
+      &lt;li&gt;或者，在机器上执行命令&lt;code class=&quot;highlighter-rouge&quot;&gt;sudo raspi-config&lt;/code&gt;后，选择5 Interfacing Options - P2 SSH&lt;/li&gt;
+      &lt;li&gt;再或者，直接在机器上&lt;/li&gt;
+      &lt;li&gt;验证可以正常登陆：
+        &lt;ol&gt;
+          &lt;li&gt;用树莓派连上路由器的一个LAN口，电脑连同一个路由器的另一个LAN口，保证在同一子网下。&lt;/li&gt;
+          &lt;li&gt;从路由器设置页面得知树莓派ip，或者树莓派接上显示屏，&lt;code class=&quot;highlighter-rouge&quot;&gt;ifconfig&lt;/code&gt;，结合&lt;code class=&quot;highlighter-rouge&quot;&gt;networksetup -listallhardwareports&lt;/code&gt;确定ip（eth0代表有线网络，wlan0代表无线网络）&lt;/li&gt;
+          &lt;li&gt;ssh pi@raspberry_pi_ip_address 看是否成功（密码：raspberry）&lt;/li&gt;
+        &lt;/ol&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;或者可以使用telnet，xrdp，VNC等方式&lt;/li&gt;
+  &lt;li&gt;Windows可能没有预装SSH，可以用PuTTY(注意，默认设置是禁用小键盘，在Terminal - Features中修改)或者安装OpenSSH进行连接&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;ok，已经验证可以SSH登陆了（&lt;code class=&quot;highlighter-rouge&quot;&gt;ssh username@ip&lt;/code&gt;），接下来就是要真正接入网络了，为了顺便复习一下计算机网络，单独写在下一篇文章内。&lt;/p&gt;
+
+&lt;p&gt;验证完过后，进行一些SSH有关的安全设置：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;添加SSH key（可以参照上一篇文章:&lt;a href=&quot;/blog/practice/2019/09/10/Gitlab-SSH-key.html&quot;&gt;GitLab设置SSH key，以及相关知识&lt;/a&gt;）&lt;!-- notice the link might change! --&gt;&lt;/li&gt;
+  &lt;li&gt;可以改SSH的端口（默认22）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一些基本设置：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;修改默认的密码：
+    &lt;ul&gt;
+      &lt;li&gt;root登陆，输入passwd，就可以修改&lt;/li&gt;
+      &lt;li&gt;修改别的用户的，passwd xx（用户名），按照提示即可修改&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;安装vim：自带的vi很不方便（插入模式）
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sudo apt-get install vim&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;固定ip的话，可以直连树莓派端进行设置(/etc/dhcpcd.conf文件中)，也可以在路由器处设置然后连接树莓派。此处，在路由器设置界面把Mac和ip绑定了，做了端口转发。&lt;/p&gt;
+
+&lt;p&gt;使用Django快速建立项目进行测试：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Raspberry自带Python2.7和Python3.4&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;find / -name pip*&lt;/code&gt; 尝试查找pip，发现没有&lt;/li&gt;
+  &lt;li&gt;安装pip：尝试：
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sh
+  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  python get-pip.py
+ &lt;/code&gt; 但是无法安装pip3&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sudo apt-get install python3-pip&lt;/code&gt; 成功安装pip3&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;pip install Django&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;为了让django-admin可以使用，还要加入环境变量：&lt;code class=&quot;highlighter-rouge&quot;&gt;export PATH=$PATH:/home/pi/.local/bin&lt;/code&gt;。这是暂时的，当下生效；还需要在系统开机文件中添加这个语句，才能保证之后每次开机之后PATH变量都带这个directory：&lt;code class=&quot;highlighter-rouge&quot;&gt;test&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;django-admin startproject mysite&lt;/code&gt; 创建项目&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;python manage.py runserver&lt;/code&gt; 运行项目，默认端口8000&lt;/li&gt;
+  &lt;li&gt;尝试从同一子网的机器直接access，发现不行，虽然ping和ssh都可以，猜测原因：服务器禁止访问
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim hello_world/settings.py
+ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'192.168.1.10'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# add this&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;还是不可以，猜测是主机防火墙（iptables）设置问题？使用ufw开启端口，注意也要开启22的ssh端口（未验证）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;一些问题：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;速度有点慢？
+    &lt;ul&gt;
+      &lt;li&gt;做research的时候，知道了是千兆网口，但是I/O比较弱，跟不上，因为是micro SD卡读写。SSD会快。&lt;/li&gt;
+      &lt;li&gt;内存/硬盘不够？所以买大内存，大micro SD卡（32G以上好像需要reformat以及分区）&lt;/li&gt;
+      &lt;li&gt;选择读写速度快，稳定的micro SD卡（最低class2，2MB/s；最高3，30MB/s。作为参考，SSD速度，是三位数……最高可以以G为单位）&lt;/li&gt;
+      &lt;li&gt;换了4G内存，32G SD卡，依旧比较慢&lt;/li&gt;
+      &lt;li&gt;继续research，比较其他server，发现延迟差不多，但是就是测速很慢&lt;/li&gt;
+      &lt;li&gt;是在某个节点，推测线路是瓶颈？&lt;/li&gt;
+      &lt;li&gt;ipip.net，工具TraceRoute或者tracet 查看路由以及延迟&lt;/li&gt;
+      &lt;li&gt;ping.pe或者mtr查看各站丢包情况&lt;/li&gt;
+      &lt;li&gt;国内网络情况复杂，不同的运营商之间慢，因为超售，国际慢（比如电信必须专用CN2线路才快，所以要找到的好的线路/机房）&lt;/li&gt;
+      &lt;li&gt;BBR加速（谷歌的拥塞控制算法。Linux的4.9版内核已经使用该算法）&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Linux上的一些命令的复习：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;grep (Global Regular Expression Print)：管道正则搜索。 &lt;code class=&quot;highlighter-rouge&quot;&gt;grep 'test' d*&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;wget：下载&lt;/li&gt;
+  &lt;li&gt;scp：拷贝。eg. &lt;code class=&quot;highlighter-rouge&quot;&gt;scp work@192.168.0.10:/home/work/source.txt work@192.168.0.11:/home/work/ 	#把192.168.0.10机器上的source.txt文件拷贝到192.168.0.11机器的/home/work目录下&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+&lt;h4 id=&quot;参考资料&quot;&gt;参考资料：&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/huayucong/article/details/48107267&quot;&gt;树莓派的操作系统介绍&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/hongweigg/article/details/77948664&quot;&gt;Linux shell 命令多行结果赋值给变量&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/fetty/p/4857158.html&quot;&gt;Linux字符串截取命令&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.howtogeek.com/270333/what-does-the-percent-sign-in-linux-shell-strings-do/&quot;&gt;What Does the Percent Sign in Linux Shell Strings Do?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/shuai0845/article/details/86532142&quot;&gt;linux下的字符串比较&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.jjlog.com/fenxiang/207.html&quot;&gt;如何识别HDMI、[mini]HDMI、[micro]HDMI接口&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://www.raspigeek.com/index.php?c=read&amp;amp;id=126&amp;amp;page=1&quot;&gt;树莓派散热片安装与风扇接线方法/ 和自动温控方法&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.basemu.com/raspberry-pi-4-gpio-pinout.html&quot;&gt;树莓派4的GPIO接口介绍&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/coolwriter/article/details/75577092&quot;&gt;树莓派GPIO入门&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/vamei/p/6751992.html&quot;&gt;树莓派的GPIO编程&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://product.pconline.com.cn/itbk/diy/power/1707/9645570.html&quot;&gt;机箱风扇方向 机箱风扇怎么安装最靠谱？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/63818978&quot;&gt;谈一谈CPU散热与机箱风扇&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/53743408&quot;&gt;三秒钟区分电脑风扇进风端和出风端&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/kxwinxp/article/details/78370913&quot;&gt;树莓派3B+ 安装系统&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://shumeipai.nxez.com/2017/09/13/raspberry-pi-network-configuration-before-boot.html&quot;&gt;无屏幕和键盘配置树莓派WiFi和SSH&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://shumeipai.nxez.com/2017/02/27/raspbian-ssh-connection-refused.html&quot;&gt;树莓派新系统SSH连接被拒绝的解决方法&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/huayucong/article/details/52966502&quot;&gt;使用Raspi-config配置工具来设置树莓派&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/zdwzzu2006/article/details/6928803&quot;&gt;linux查看本机IP、gateway、dns&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/m0_37556444/article/details/83351952&quot;&gt;mac的ifconfig命令&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/naibozhuan3744/article/details/84963024&quot;&gt;树莓派查看ip地址（命令ifconfig）和退出ping&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/wuli_dear_wang/article/details/84446168&quot;&gt;树莓派远程连接的四种方式（最全）&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/u011630575/article/details/49821281&quot;&gt;修改linux用户密码（passwd）&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://stackoverflow.com/questions/6587507/how-to-install-pip-with-python-3&quot;&gt;How to install pip with Python 3?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://opensource.com/article/17/6/set-path-linux&quot;&gt;How to set your $PATH variable in Linux&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/Calvin_zhuyue/article/details/67677491&quot;&gt;树莓派搭建django&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://wsgzao.github.io/post/iptables/&quot;&gt;iptables 配置实践&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/haochuang/p/6214534.html&quot;&gt;【树莓派】配置树莓派防火墙&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.djangoproject.com/en/2.2/intro/tutorial01/&quot;&gt;Writing your first Django app&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://gist.github.com/nex3/c395b2f8fd4b02068be37c961301caa7&quot;&gt;path.md&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/end/archive/2012/02/21/2360965.html&quot;&gt;linux grep命令&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/qq_31010431/article/details/54285664&quot;&gt;SSH远程拷贝文件&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.jianshu.com/p/59df0009316e&quot;&gt;树莓派3b+从0开始：（2）SD卡的配置&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/QianZhaoVic/article/details/79031359&quot;&gt;从Linux服务器下载文件夹到本地&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/u013178472/article/details/78574878&quot;&gt;树莓派手动指定静态IP和DNS 终极解决大法&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://tech.itabas.com/2016/09/08/raspberry/access-raspberry/&quot;&gt;外网访问树莓派&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/lqxandroid2012/article/details/79696318&quot;&gt;用ping ，mtr ，traceroute 进行网络丢包分析&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://zhuanlan.zhihu.com/p/28580807&quot;&gt;Micro SD 卡你真的会选么？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/xxNull/article/details/78280581&quot;&gt;树莓派之SSH连接经验&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://wiki.jikexueyuan.com/project/raspberry-pi/software.html&quot;&gt;树莓派常用软件及服务&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;http://einverne.github.io/post/2017/11/mtr-usage.html&quot;&gt;每天学习一个命令: mtr 查看路由网络连通性&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/lynxzong/article/details/89810538&quot;&gt;树莓派如何开启谷歌的BBR TCP加速&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.liuboping.com/%E5%BC%80%E5%90%AFtcp-bbr%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6%E7%AE%97%E6%B3%95/&quot;&gt;开启TCP BBR拥塞控制算法&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://fangeqiang.com/1378.html&quot;&gt;[科普] 为什么你用的VPN网速那么慢？&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/farYang/article/details/50788795&quot;&gt;树莓派安装mysql并开启远程访问(开启3306端口)&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/lamp_yang_3533/article/details/52154695&quot;&gt;同一局域网内的其他电脑访问我的电脑本地的网站&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+				<pubDate>Sun, 20 Oct 2019 19:33:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html</guid>
+			</item>
+		
+			<item>
+				<title>Java线程安全之可见性和原子性</title>
+				<description>&lt;p&gt;&lt;strong&gt;Java线程安全&lt;/strong&gt;问题，是我们在写多线程程序的时候需要考虑的。&lt;/p&gt;
+
+&lt;p&gt;具体一点来说，是当且仅当多线程有&lt;strong&gt;共享的变量&lt;/strong&gt;的时候（堆内存中。堆内存：放实例字段，静态字段和数组元素。共享变量：非局部变量——比如在线程执行方法中的变量；也不是ThreadLocal声明的变量。每个线程有自己的工作内存，主要用于完成代码操作，有虚拟机栈——Java方法，本地方法栈——Native方法，程序计数器——记录当前线程执行字节码的位置。所有线程共享堆内存和方法区）。&lt;/p&gt;
+
+&lt;p&gt;再具体一点，是有线程写变量，同时也有线程读或者写共享变量的时候：显而易见地，如果所有线程都只是读共享变量，并不会产生什么冲突。&lt;/p&gt;
+
+&lt;h3 id=&quot;可见性&quot;&gt;可见性&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;可见性&lt;/strong&gt;，扩句：一个写线程的修改对其他读线程的可见。&lt;/p&gt;
+
+&lt;p&gt;比如说，&lt;strong&gt;脏读&lt;/strong&gt;，是没有满足可见性的情况。举例：t1将共享变量v的值从0修改成1，但是t2读的时候，读到的还是0.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;造成脏读的原因&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;CPU的缓存机制：正常数据都存在主内存（main memory），但是读写都比较慢，所以CPU做了一点优化：在CPU内使用cache，缓存部分数据。 从多线程的角度上来说，就是，每个线程可能有自己的cache，并且，不一定什么时候更新到主内存的值。对于写和读都是如此，我们无法决定CPU什么时候把值从缓存写到主内存，或者从主内存读到缓存，所以就有了滞后性，可能造成脏读。&lt;/li&gt;
+  &lt;li&gt;指令重排：缓存机制造成的脏读，只是一时性的。但是指令重排（as-if-serial，重新排列指令，在单个线程结果不会改变的条件上，所以，在多线程的情况下，这种顺序改变，可能造成使用的是其他线程修改之前的值），可能造成永久性的脏读。CPU会做这种指令重排；Java编译器也会做：JIT (Just In Time)编译。Java程序的运行过程是，先被Java编译器编译成字节码文件（这里没有任何性能优化），然后被JVM解释运行，一行行的。从这个角度上来说，Java是脚本语言。但是！这样很耗时间，比如在循环之中，JIT编译器就会编译重复解释的语句以提高性能：编译完后放在方法区，下次跑的时候就不解释了，直接去拿。从这个角度上来说，Java是编译语言。总而言之，Java是两者的结合，并且，在JIT升级编译的过程中，JVM会进行上述可能产生问题的指令重排&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Java制定的规范&lt;/strong&gt;：Java内存模型（描述多线程程序的语义）规定了volatile关键字，需要实现：对被此关键字修饰的变量的写操作，需要对之后所有的读操作同步。这样，用volatile关键字修饰的变量，就不会产生脏读问题了：所有的读，读到的都一定是更新的写之后的数据。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;JVM的实现方法&lt;/strong&gt;：禁止CPU缓存；对volatile变量相关的指令不做指令重排（反过来说，也就是：只有指令重排影响到可见性的时候，才会禁止）。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;其他的例子&lt;/strong&gt;：读写操作扩展开来，就是：一个程序执行的操作可被其他线程感知或被其他线程直接影响。具体的例子有：Lock, Unlock；db数据修改，等等。对于所有的线程间操作，都存在可见性问题，JMM都作了规范。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;重申&lt;/strong&gt;：脏读，即是想定了，只有一个线程写，其他都是读的情况。如果有多个线程写？详见下文。&lt;/p&gt;
+
+&lt;h3 id=&quot;原子性&quot;&gt;原子性&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;原子性&lt;/strong&gt;，意即一个操作的不可分割性——如果分割了，可能会产生失效。&lt;/p&gt;
+
+&lt;p&gt;比如说，&lt;strong&gt;脏写&lt;/strong&gt;。举例：t1和t2一起读了v的值：1，然后t1进行+1操作，把v的值从1变成了2，写回；t2同理，也想进行+1操作，于是把v的值从1变成了2，也写回了。这样，我们第一次的写操作就丢失了。或者说，从t1写回了的那个时间点开始，t2拿到的v的值实际上就已经失效/过期/不合法了。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Naive的解决方法&lt;/strong&gt;：直接用synchronized保证一时间只有一个线程进行这个操作，或者用ReentrantLock在操作前后加锁、解锁，实现同样效果。但是这样的话，并发度只有1:一时间只有一个能操作。如何加速？&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;聪明的解决办法&lt;/strong&gt;：有点像乐观锁的思想，就是总之先操作，然后看操作的合法性——写回的时候，如何看操作的合法性？记录变化前的旧值，和内存中的值进行比较；如果没有变化，才交换新值。这个比较和交换操作（CAS）是一个从硬件层面上保证的原子操作，所以保证了不会在这期间有冲突。如果有变化的话，则从头开始任务。如此不断循环，直到成功（自旋）。实际上，AtomicInteger的，比如incrementAndGet方法就是这么做的。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;一些随之产生的问题&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;不断循环，消耗CPU（实际上碰撞的几率不高；如果并发实在是大的话，就参照Map/Reduce的思想，多创建几个可操作的对象，减少失败率，最后sum up）；&lt;/li&gt;
+  &lt;li&gt;CAS是仅针对单个变量的原子操作（虽然可以通过创建对象的方式规避）；&lt;/li&gt;
+  &lt;li&gt;ABA问题：我们只比较了旧值，如果有操作多次修改而值没有改变？那我们的目标：保持共享变量的合法性，就还是没有达到（可以通过增加修改版本号的方式解决）。&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+				<pubDate>Sat, 12 Oct 2019 18:43:43 -0700</pubDate>
+				<link>http://localhost:4000/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html</guid>
+			</item>
+		
+			<item>
 				<title>GitLab设置SSH key，以及相关知识</title>
 				<description>&lt;h3 id=&quot;gitlab设置ssh-key在本地已有ssh-key的情况下&quot;&gt;GitLab设置SSH key（在本地已有SSH key的情况下）&lt;/h3&gt;
 &lt;p&gt;环境：macOS 10.14.6
@@ -142,14 +983,12 @@
   &lt;li&gt;&lt;a href=&quot;http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html&quot;&gt;SSH原理与运用（一）：远程登录&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/gavincoder/p/10054532.html&quot;&gt;Git连接GitLab远程仓库&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys&quot;&gt;SSH Essentials: Working with SSH Servers, Clients, and Keys&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server&quot;&gt;How To Configure SSH Key-Based Authentication on a Linux Server&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process&quot;&gt;Understanding the SSH Encryption and Connection Process&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/qq_40870418/article/details/78829769&quot;&gt;Diffie-Hellman密钥是如何交换的&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Wed, 11 Sep 2019 01:42:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/practice/2019/09/11/Gitlab-SSH-key.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/practice/2019/09/11/Gitlab-SSH-key.html</guid>
+				<pubDate>Tue, 10 Sep 2019 10:42:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/practice/2019/09/10/Gitlab-SSH-key.html</guid>
 			</item>
 		
 			<item>
@@ -242,9 +1081,9 @@
 *JWT还是用在一些不那么需要保证安全的地方会好一些例如确认退订邮件等。&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Thu, 05 Sep 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/security/2019/09/05/JWT.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/security/2019/09/05/JWT.html</guid>
+				<pubDate>Wed, 04 Sep 2019 12:00:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/security/2019/09/04/JWT.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/security/2019/09/04/JWT.html</guid>
 			</item>
 		
 			<item>
@@ -255,7 +1094,7 @@
 
 &lt;p&gt;Thanks to &lt;a href=&quot;https://medium.com/@satorusasozaki/how-to-create-a-blog-with-jekyll-and-github-page-d6470ab32369&quot;&gt;How to Create a Blog with Jekyll and GitHub Page&lt;/a&gt;, &lt;a href=&quot;https://medium.com/20percentwork/creating-your-blog-for-free-using-jekyll-github-pages-dba37272730a&quot;&gt;Greating your blog for free using Jekyll + Github pages&lt;/a&gt;, &lt;a href=&quot;https://jekyllcn.com&quot;&gt;Jeckll&lt;/a&gt;, &lt;a href=&quot;https://stackoverflow.com/questions/43622325/failed-to-load-resources-with-jekyll-on-a-github-page&quot;&gt;Failed to load resources with Jekyll on a Github page&lt;/a&gt;, &lt;a href=&quot;https://24ways.org/2013/get-started-with-github-pages/&quot;&gt;Get Started With GitHub Pages (Plus Bonus Jekyll)&lt;/a&gt;, &lt;a href=&quot;https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages&quot;&gt;Configuring a publishing source for GitHub Pages&lt;/a&gt;.&lt;/p&gt;
 </description>
-				<pubDate>Mon, 19 Aug 2019 15:27:00 +0800</pubDate>
+				<pubDate>Mon, 19 Aug 2019 00:27:00 -0700</pubDate>
 				<link>http://localhost:4000/blog/other/2019/08/19/hello-world.html</link>
 				<guid isPermaLink="true">http://localhost:4000/blog/other/2019/08/19/hello-world.html</guid>
 			</item>
@@ -329,9 +1168,9 @@
   &lt;li&gt;内容管理（对于整个仓配系统如何进行管理，如整体货物分发的精确度、仓配的时效性、发货地的匹配度等）：它通过内部和外部监控系统，获取网络部件的状况信息，测量内容发布的端到端性能（如包丢失、延时、平均带宽、启动时间、帧速率等），保证网络处于最佳的运行状态。&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Fri, 09 Aug 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/architects/2019/08/09/CDN.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/architects/2019/08/09/CDN.html</guid>
+				<pubDate>Thu, 08 Aug 2019 12:00:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/architects/2019/08/08/CDN.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/architects/2019/08/08/CDN.html</guid>
 			</item>
 		
 			<item>
@@ -478,460 +1317,9 @@ eg.
   &lt;/li&gt;
 &lt;/ul&gt;
 </description>
-				<pubDate>Tue, 06 Aug 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/front-end/2019/08/06/JavaScript-closure.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/06/JavaScript-closure.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】JavaScript Memory Management</title>
-				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_Management&quot;&gt;Memory Management&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;JS在objects创建的时候自动分配内存，不再被使用的时候释放（垃圾回收）。&lt;/p&gt;
-
-&lt;p&gt;memory life cycle：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;分配所需memory；&lt;/li&gt;
-  &lt;li&gt;使用分配的memory（读，写）；(explicit in all language)&lt;/li&gt;
-  &lt;li&gt;在不再被用到的时候，释放分配的内存。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;1、3在low-level language中explicit，high-level中通常implicit.&lt;br /&gt;
-JS？在define的时候分配内存。比如function是一个callable object，会在定义function的时候被分配；function expressions也会分配一个object。&lt;br /&gt;
-一些function calls也会object allocation。比如&lt;code class=&quot;highlighter-rouge&quot;&gt;new Date()&lt;/code&gt;（分配Date object），比如&lt;code class=&quot;highlighter-rouge&quot;&gt;document.createElement(‘div’)&lt;/code&gt;（allocates a DOM element）；&lt;br /&gt;
-一些methods也会allocate new values / objects：&lt;code class=&quot;highlighter-rouge&quot;&gt;s.substr(0, 3)&lt;/code&gt; （因为String是immutable）；&lt;code class=&quot;highlighter-rouge&quot;&gt;a.concat(a2);&lt;/code&gt;&lt;br /&gt;
-Using values basically means reading and writing in allocated memory. This can be done by reading or writing the value of a variable or an object property or even passing an argument to a function.&lt;br /&gt;
-在不需要的时候释放内存：主要问题都在这一phase。最难的地方：确定何时分配的内存不再被需要。底层语言：developer手动决定；某些高级语言，如JS，GC：监控内存分配，确定何时某个被分配的内存块不再被需要，并且reclaim it. 只是approximation，undecidable。&lt;/p&gt;
-
-&lt;p&gt;Gabage Collection：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;reference（引用）：如果一个object has access to the another (implicitly or explicitly)，那么就说这个object reference（引用）另外一个。比如，一个JavaScript object有对其prototype的reference（implicit）以及对自己的properties values的（explicit）。&lt;/li&gt;
-  &lt;li&gt;Reference-counting garbage collenction: 最naive的垃圾回收算法。一个object是否还被需要 -&amp;gt; 一个object是否有任何object referencing it。如果0个references pointing to it，那么叫garbage，或者collectible。
-    &lt;ul&gt;
-      &lt;li&gt;限制：circular reference：a reference b, b also reference a。但是永久都无法被回收。memory leak的常见原因。实际例子？dom元素reference自己的话，即使被从DOM tree中移除，也无法被回收。如果那个元素consume很多memory，那么永远无法回收则会造成browser速度很慢！&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;Mark-and-sweep algorithm: 不再被需要 -&amp;gt; unreachable。assume roots，在JS中，是the global object. Garbage collector会定期从root开始，查找所有从root被referenc的，以及往深了找，被他们reference的。剩下的就是non-reachable的，会被回收。这样可以解决之前的circular reference的问题。但是手动释放内存就变难了：需要made explicitly unreachable（之前把所有reference置为空就可以了）。迄今（2019），不可能。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sat, 03 Aug 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/front-end/2019/08/03/JavaScript-memory-management-copy.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/03/JavaScript-memory-management-copy.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】前后端分离/解耦</title>
-				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/BzSRWzxXsX7ykn_IojHwpw&quot;&gt;Web实现前后端分离，前后端解耦&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;（原文逻辑略混乱，估计也是参考了很多不同来源的资料）&lt;/p&gt;
-
-&lt;p&gt;Tomcat + Ngnix (中间也可以有个Node.js)&lt;br /&gt;
-前后端分离会为以后的大型分布式构架、弹性计算构架、微服务构架、多端化服务提供方便。&lt;br /&gt;
-核心思想：前端HTML页面通过Ajax调用后端的RESTful API并使用JSON数据进行交互。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Web服务器：eg. nginx, apache一般只能解析静态资源；&lt;/li&gt;
-  &lt;li&gt;应用服务器：tomcat, jetty, resin可以解析动态资源也可以解析静态资源，但解析静态资源的能力可能没有前者好。
-*一般只有Web服务器才能被外网访问，应用服务器只能内网访问&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;为何分离？前端想负责更多的东西。交互逻辑分配给前端，后端专注提供API，进行权限控制、运算工作。前端可以用Node.js搭建自己的本地服务器，直接在本地开发，通过插件将API请求转发到后台。同事开工，不互相依赖，开发效率更快，分工比较均衡。&lt;/p&gt;
-
-&lt;p&gt;MVC -&amp;gt; 前后端分离：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;MVC（以下都在1个服务器中，静态资源和业务代码混合）：
-    &lt;ul&gt;
-      &lt;li&gt;模型：封装数据的载体。Java中一般是简单POJO（普通Java Bean，包含一系列成员变量以及getter/setter）；&lt;/li&gt;
-      &lt;li&gt;视图：偏重展现。Java中可通过JSP充当视图，或者纯HTML展现（目前的主流）；&lt;/li&gt;
-      &lt;li&gt;控制器：粘合前两者。得到请求，获取数据并封装模型，最后将模型传递到视图中进行展现。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;RESTful简化：
-    &lt;ul&gt;
-      &lt;li&gt;前端服务器（静态资源，关注页面展现）：接受请求 -&amp;gt; 转发请求，获取数据（转发到后端） -&amp;gt; 视图解析（将上一步获取的数据填充到页面中）&lt;/li&gt;
-      &lt;li&gt;后端服务器（业务代码，关注业务逻辑）：接受请求 -&amp;gt; 处理请求，获取数据（eg. 访问数据库查询用户信息） -&amp;gt; 返回数据&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;REST构架：用URL来访问资源。面向资源。请求方式和CRUD相对应。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;GET：查&lt;/li&gt;
-  &lt;li&gt;POST：增&lt;/li&gt;
-  &lt;li&gt;PUT：改&lt;/li&gt;
-  &lt;li&gt;DELETE：删&lt;/li&gt;
-  &lt;li&gt;无状态的构架模式：任何时候都可以由客户端发出请求到服务端，最终返回自己想要的数据，当前请求不会收到上次请求的印象。 -&amp;gt; 服务器将内部资源发布REST服务，客户端通过URL来访问这些资源，SOA提倡的“面向服务”的思想。所以REST也被看作是一种“轻量级”的SOA实现技术。&lt;/li&gt;
-  &lt;li&gt;实际上，我们往往需要提供一个REST框架，让其实现前后端的分离构架，让开发人员集中精力在业务上。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;前后端分离意义大吗？&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;前端变化比后端变化频繁，则大；&lt;/li&gt;
-  &lt;li&gt;原始开发模式，数据逻辑与表现逻辑混杂不清，则大；&lt;/li&gt;
-  &lt;li&gt;前端后端团队分离，技能差异大，则大；&lt;/li&gt;
-  &lt;li&gt;前端效果绚丽/跨设备兼容要求高，则大。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;JavaWeb：大多是Java程序员负责前端（Ajax / jQuery / JavaScript / HTML / CSS……），和后端（Java/MySQL/Oracle……）
-大中型公司：专业人才；小公司：全才。&lt;br /&gt;
-个人职业发展？建议分开。&lt;/p&gt;
-
-&lt;p&gt;后端java工程师：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;专攻：java基础，设计模式，jvm原理，spring + springmvc原理及源码，linux，mysql事务隔离与锁机制，mongodb，http / tcp，多线程，分布式架构（dubbo，dubbox，spring cloud），弹性计算架构，微服务架构（springboot + zookeeper + docker + jenkins），java性能优化，以及相关的项目管理等等。&lt;/li&gt;
-  &lt;li&gt;追求：三高（高并发，高可用，高性能），安全，存储，业务等等。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;前端工程师：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;专攻：html5，css3，jquery，angularjs，bootstrap，reactjs，vuejs，webpack，less/sass，gulp，nodejs，Google V8引擎，javascript多线程，模块化，面向切面编程，设计模式，浏览器兼容性，性能优化等等。&lt;/li&gt;
-  &lt;li&gt;追求：页面表现，速度流畅，兼容性，用户体验等等。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;曾经的JavaWeb项目构架：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;若干后台框架：Spring MVC / Struts + Spring + Spring JDBC / Hibernate / MyBatis等&lt;/li&gt;
-  &lt;li&gt;分层：
-    &lt;ul&gt;
-      &lt;li&gt;控制层（controller/action）：负责接收数据，调用相关业务，分装数据，以及路由，渲染到JSP页面&lt;/li&gt;
-      &lt;li&gt;业务层（service/manage）&lt;/li&gt;
-      &lt;li&gt;持久层（dao）&lt;/li&gt;
-      &lt;li&gt;JSP页面上使用各种标签（jstl / el / struts标签等）或者手写Java表达式（&amp;lt;%=%&amp;gt;）展现后台数据，MVC套路&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;发布：
-    &lt;ul&gt;
-      &lt;li&gt;Maven或者Eclipse等工具打成war包，发布到生产环境下的web容器（tomcat / jboss / weblogic / websphere / jetty / resin） -&amp;gt;&lt;/li&gt;
-      &lt;li&gt;启动Web容器，开始提供服务，配置域名，DNS……相关&lt;/li&gt;
-      &lt;li&gt;（前后端都在war包里，包括js，css，图片，各种第三方的库）&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;网站域名 -&amp;gt; senario?&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;浏览器通过dns服务器找到服务器外网ip，发送HTTP请求到服务器，TCP3次握手之后（HTTP下面是TCP），通过TCP协议开始传输数据；服务器得到请求后，开始提供服务，接受参数，之后返回应答给浏览器；浏览器通过content-type解析返回的内容，呈现给用户。&lt;/li&gt;
-  &lt;li&gt;eg. 100张图片？看似一次HTTP请求，其实不是：第一次访问的时候，无缓存，所以有100次HTTP请求；服务器接收了，都需要耗费内存区创建socket来做TCP传输（消耗服务器上的计算资源）。&lt;/li&gt;
-  &lt;li&gt;-&amp;gt; 服务器压力会很大：页面中所有的请求都只请求到这台服务器上，并发访问，服务器能扛住多少个TCP连接？宽带有多大？服务器内存有多大？硬盘高性能？能扛住多少IO？给web服务器分布的内存有多大？会不会宕机？&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;so！越是大中型的web应用，越是要解耦。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;理论上，可以把数据库 + 应用服务 + 消息队列 + 缓存 + 用户上传的文件 + 日志……都放在一台服务器上……隐患大：一个子应用的内存不稳定导致整个服务器内存溢出而hung住？整个网站就都挂了！&lt;/li&gt;
-  &lt;li&gt;*技术一定要走在业务前面，否则，将错过最佳的发展期！&lt;/li&gt;
-  &lt;li&gt;服务器负载能力不足？负载均衡，将服务器做成集群：水平扩展一块巨石，性能加速将会越来越低——本身负载久低的功能 or 模块是没必要水平扩展的——性能瓶颈不在前端，干嘛要水平扩展前端？&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;正常构架：拆开！&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;web服务器集群，应用服务器集群，文件服务器集群，数据库服务器集群，消息队列集群，缓存集群……&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;JSP痛点：performance。需要提升负载能力——&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;动态资源和静态资源全部耦合在一起，服务器压力大，因为服务器会收到各种http请求，例如css的http请求，js的，图片的等等。
-一旦服务器出现状况，前后台一起玩完，用户体验极差。&lt;/li&gt;
-  &lt;li&gt;UI出好设计图后，前端工程师只负责将设计图切成html，需要由java工程师来将html套成jsp页面，出错率较高（因为页面中经常会出现大量的js代码），
-修改问题时需要双方协同开发，效率低下。&lt;/li&gt;
-  &lt;li&gt;jsp必须要在支持java的web服务器里运行（例如tomcat，jetty，resin等），无法使用nginx等（nginx据说单实例http并发高达5w，这个优势要用上），
-性能提不上来。&lt;/li&gt;
-  &lt;li&gt;第一次请求jsp，必须要在web服务器中编译成servlet，第一次运行会较慢。&lt;/li&gt;
-  &lt;li&gt;每次请求jsp都是访问servlet再用输出流输出的html页面，效率没有直接使用html高（是每次哟，亲~）。&lt;/li&gt;
-  &lt;li&gt;jsp内有较多标签和表达式，前端工程师在修改页面时会捉襟见肘，遇到很多痛点。&lt;/li&gt;
-  &lt;li&gt;如果jsp中的内容很多，页面响应会很慢，因为是同步加载。&lt;/li&gt;
-  &lt;li&gt;需要前端工程师使用java的ide（例如eclipse），以及需要配置各种后端的开发环境，你们有考虑过前端工程师的感受吗。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;开发模式的转变：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;产品经理/领导/客户提出需求&lt;/li&gt;
-  &lt;li&gt;UI做出设计图&lt;/li&gt;
-  &lt;li&gt;前端工程师做html页面&lt;/li&gt;
-  &lt;li&gt;后端工程师将html页面套成jsp页面（前后端强依赖，后端必须要等前端的html做好才能套jsp。如果html发生变更，就更痛了，开发效率低）&lt;/li&gt;
-  &lt;li&gt;集成出现问题&lt;/li&gt;
-  &lt;li&gt;前端返工&lt;/li&gt;
-  &lt;li&gt;后端返工&lt;/li&gt;
-  &lt;li&gt;二次集成&lt;/li&gt;
-  &lt;li&gt;集成成功&lt;/li&gt;
-  &lt;li&gt;交付&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;-&amp;gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;产品经历/领导/客户提出需求&lt;/li&gt;
-  &lt;li&gt;UI做出设计图&lt;/li&gt;
-  &lt;li&gt;前后端约定接口&amp;amp;数据&amp;amp;参数&lt;/li&gt;
-  &lt;li&gt;前后端并行开发（无强依赖，可前后端并行开发，如果需求变更，只要接口&amp;amp;参数不变，就不用两边都修改代码，开发效率高）&lt;/li&gt;
-  &lt;li&gt;前后端集成&lt;/li&gt;
-  &lt;li&gt;前端页面调整&lt;/li&gt;
-  &lt;li&gt;集成成功&lt;/li&gt;
-  &lt;li&gt;交付&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;请求方式的转变：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;客户端请求&lt;/li&gt;
-  &lt;li&gt;服务端的servlet或controller接收请求（后端控制路由与渲染页面，整个项目开发的权重大部分在后端）&lt;/li&gt;
-  &lt;li&gt;调用service,dao代码完成业务逻辑&lt;/li&gt;
-  &lt;li&gt;返回jsp&lt;/li&gt;
-  &lt;li&gt;jsp展现一些动态的代码&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;-&amp;gt;&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;浏览器发送请求&lt;/li&gt;
-  &lt;li&gt;直接到达html页面（前端控制路由与渲染页面，整个项目开发的权重前移）&lt;/li&gt;
-  &lt;li&gt;html页面负责调用服务端接口产生数据（通过ajax等等，后台返回json格式数据，json数据格式因为简洁高效而取代xml）&lt;/li&gt;
-  &lt;li&gt;填充html，展现动态效果，在页面上进行解析并操作DOM。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;eg. 阿里巴巴等大型网站，按一下F12，监控一下你刷新一次页面，他的http流。大多数都是单独请求后台数据，使用json传输数据，而不是一个大而全的http请求把整个页面包括动+静全部返回过来。&lt;/p&gt;
-
-&lt;p&gt;新的请求步骤：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;大量并发浏览器请求 -&amp;gt; web服务器集群(nginx) -&amp;gt; 应用服务器集群(tomcat) -&amp;gt; 文件/数据库/缓存/消息队列服务器集群&lt;/li&gt;
-  &lt;li&gt;同时又可以玩分模块，还可以按业务拆成一个个的小集群，为后面的架构升级做准备。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;前后端分离的优势：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;可以实现真正的前后端解耦，前端服务器使用nginx。
-    &lt;ul&gt;
-      &lt;li&gt;前端/WEB服务器放的是css，js，图片等等一系列静态资源（甚至你还可以css，js，图片等资源放到特定的文件服务器，例如阿里云的oss，并使用cdn加速），前端服务器负责控制页面引用&amp;amp;跳转&amp;amp;路由，前端页面异步调用后端的接口，后端/应用服务器使用tomcat（把tomcat想象成一个数据提供者），加快整体响应速度。&lt;/li&gt;
-      &lt;li&gt;这里需要使用一些前端工程化的框架比如nodejs，react，router，react，redux，webpack&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;发现bug，可以快速定位是谁的问题，不会出现互相踢皮球的现象。
-    &lt;ul&gt;
-      &lt;li&gt;页面逻辑，跳转错误，浏览器兼容性问题，脚本错误，页面样式等问题，全部由前端工程师来负责。&lt;/li&gt;
-      &lt;li&gt;接口数据出错，数据没有提交成功，应答超时等问题，全部由后端工程师来解决&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;在大并发情况下，可以同时水平扩展前后端服务器，比如淘宝的一个首页就需要2000+台前端服务器做集群来抗住日均多少亿+的日均pv。
-    &lt;ul&gt;
-      &lt;li&gt;去参加阿里的技术峰会，听他们说他们的web容器都是自己写的，就算他单实例抗10万http并发，2000台是2亿http并发，并且他们还可以根据预知洪峰来无限拓展，很恐怖，就一个首页。。。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;减少后端服务器的并发/负载压力
-    &lt;ul&gt;
-      &lt;li&gt;除了接口以外的其他所有http请求全部转移到前端nginx上，接口的请求调用tomcat，参考nginx反向代理tomcat。&lt;/li&gt;
-      &lt;li&gt;且除了第一次页面请求外，浏览器会大量调用本地缓存。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;即使后端服务暂时超时或者宕机了，前端页面也会正常访问，只不过数据刷不出来而已。&lt;/li&gt;
-  &lt;li&gt;也许你也需要有微信相关的轻应用，那样你的接口完全可以共用，如果也有app相关的服务，那么只要通过一些代码重构，也可以大量复用接口，提升效率。（多端应用）&lt;/li&gt;
-  &lt;li&gt;页面显示的东西再多也不怕，因为是异步加载。&lt;/li&gt;
-  &lt;li&gt;nginx支持页面热部署，不用重启服务器，前端升级更无缝。&lt;/li&gt;
-  &lt;li&gt;增加代码的维护性&amp;amp;易读性（前后端耦在一起的代码读起来相当费劲）。&lt;/li&gt;
-  &lt;li&gt;提升开发效率，因为可以前后端并行开发，而不是像以前的强依赖。&lt;/li&gt;
-  &lt;li&gt;在nginx中部署证书，外网使用https访问，并且只开放443和80端口，其他端口一律关闭（防止黑客端口扫描），
-    &lt;ul&gt;
-      &lt;li&gt;内网使用http，性能和安全都有保障。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;前端大量的组件代码得以复用，组件化，提升开发效率，抽出来！&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;注意事项：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;在开需求会议的时候，前后端工程师必须全部参加，并且需要制定好接口文档，后端工程师要写好测试用例（2个维度），不要让前端工程师充当你的专职测试，
-推荐使用chrome的插件postman或soapui或jmeter，service层的测试用例拿junit写。ps：前端也可以玩单元测试吗？&lt;/li&gt;
-  &lt;li&gt;上述的接口并不是java里的interface，说白了调用接口就是调用你controller里的方法。&lt;/li&gt;
-  &lt;li&gt;加重了前端团队的工作量，减轻了后端团队的工作量，提高了性能和可扩展性。&lt;/li&gt;
-  &lt;li&gt;我们需要一些前端的框架来解决类似于页面嵌套，分页，页面跳转控制等功能。（上面提到的那些前端框架）。&lt;/li&gt;
-  &lt;li&gt;如果你的项目很小，或者是一个单纯的内网项目，那你大可放心，不用任何架构而言，但是如果你的项目是外网项目，呵呵哒。&lt;/li&gt;
-  &lt;li&gt;以前还有人在使用类似于velocity/freemarker等模板框架来生成静态页面，仁者见仁智者见智。&lt;/li&gt;
-  &lt;li&gt;这篇文章主要的目的是说jsp在大型外网java web项目中被淘汰掉，可没说jsp可以完全不学，对于一些学生朋友来说，jsp/servlet等相关的java web基础还是要掌握牢的，不然你以为springmvc这种框架是基于什么来写的？&lt;/li&gt;
-  &lt;li&gt;如果页面上有一些权限等等相关的校验，那么这些相关的数据也可以通过Ajax从接口里拿。&lt;/li&gt;
-  &lt;li&gt;对于既可以前端做也可以后端做的逻辑，我建议是放到前端，为什么？
-    &lt;ul&gt;
-      &lt;li&gt;因为你的逻辑需要计算资源进行计算，如果放到后端去run逻辑，则会消耗带宽&amp;amp;内存&amp;amp;cpu等等计算资源，你要记住一点就是：服务端的计算资源是有限的，而如果放到前端，使用的是客户端的计算资源，这样你的服务端负载就会下降（高并发场景）。&lt;/li&gt;
-      &lt;li&gt;*类似于数据校验这种，前后端都需要做！&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;前端需要有机制应对后端请求超时以及后端服务宕机的情况，友好的展示给用户。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;扩展阅读：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;其实对于js，css，图片这类的静态资源可以考虑放到类似于阿里云的oss这类文件服务器上（如果是普通的服务器&amp;amp;操作系统，存储在到达pb级的文件后，或者单个文件夹内的文件数量达到3-5万，io会有很严重的性能问题），再在oss上配cdn（全国子节点加速），这样你页面打开的速度像飞一样， 无论你在全国的哪个地方，并且你的nginx的负载会进一步降低。&lt;/li&gt;
-  &lt;li&gt;如果你要玩轻量级微服务架构，要使用nodejs做网关，用nodejs的好处还有利于seo优化，因为nginx只是向浏览器返回页面静态资源，而国内的搜索引擎爬虫只会抓取静态数据，不会解析页面中的js，这使得应用得不到良好的搜索引擎支持。同时因为nginx不会进行页面的组装渲染，需要把静态页面返回到浏览器，然后完成渲染工作，这加重了浏览器的渲染负担。
-浏览器发起的请求经过nginx进行分发，URL请求统一分发到nodejs，在nodejs中进行页面组装渲染；API请求则直接发送到后端服务器，完成响应。&lt;/li&gt;
-  &lt;li&gt;如果遇到跨域问题，spring4的CORS可以完美解决，但一般使用nginx反向代理都不会有跨域问题，除非你把前端服务和后端服务分成两个域名。
-JSONP的方式也被淘汰掉了。&lt;/li&gt;
-  &lt;li&gt;如果想玩多端应用，注意要去掉tomcat原生的session机制，要使用token机制，使用缓存（因为是分布式系统），做单点，对于token机制的安全性问题，可以搜一下jwt。&lt;/li&gt;
-  &lt;li&gt;前端项目中可以加入mock测试（构造虚拟测试对象来模拟后端，可以独立开发和测试），后端需要有详细的测试用例，保证服务的可用性与稳定性。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;总结：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;不仅仅是一种开发模式，更是一种构架模式（前后端分离构架）。。&lt;/li&gt;
-  &lt;li&gt;前端后端是2个项目，放在2个不同的服务器，需要独立部署，2个不同的工程，2个不同的代码库，2套不同的开发人员。&lt;/li&gt;
-  &lt;li&gt;前后端约定交互接口，实现并行开发；结束后独立部署，前端通过Ajax发送HTTP请求调用后端的RESTful API。&lt;/li&gt;
-  &lt;li&gt;前端只需关注页面的样式和动态数据的解析/渲染，后端专注于具体业务逻辑。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 28 Jul 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/fullstack/2019/07/28/front-end-back-end-decouple.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/fullstack/2019/07/28/front-end-back-end-decouple.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】BT种子以及磁力链接——去中心化网络</title>
-				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://sspai.com/post/55502&quot;&gt;别再问我什么是 BT 种子&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;中心式服务器：
-比如下载的人一多，每个人分配到的带宽就变小了，下载速度会变慢。更危险的是，这期视频是敏感资源，你的哥们本来就不应该分享给你，如果每羊被抓了，大家也都别下载了。&lt;br /&gt;
--&amp;gt; 分散&lt;br /&gt;
-针对这些问题，美国工程师 Bram Cohen 在 2001 年发布了 BitTorrent 协议，资源不再由一个人或一个中心服务器提供，而是所有人提供给所有人，下载的人越多，速度越快。这种模式也叫 peer-to-peer（用户群对用户群），也就是我们常说的 P2P 下载。&lt;br /&gt;
-核心思想：把文件分成很多个小块，让下载者互相连接/交换。&lt;/p&gt;
-
-&lt;p&gt;种子文件，后缀名.torrent：BT种子——资源共享者生成的包含下载信息的种子文件。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;包含：文件名，大小，分块后每块文件的大小，哈希值，以及Tracker服务器的地址。&lt;/li&gt;
-  &lt;li&gt;！Tracker很重要！通过Tracker找到其他下载者的联系方式：
-    &lt;ul&gt;
-      &lt;li&gt;eg. 下载软件打开种子后，联系种子文件内置的Tracker服务器，请求文件；服务器记录下IP，并返回其他正在下载或者下载完成的人的IP -&amp;gt; 组队下载。&lt;/li&gt;
-      &lt;li&gt;eg2. 如果没有正在下载的人，且资源发布者也不在线？拜拜了您嘞（0kb/s）。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;so! Tracker服务器是P2P网络的弱点：若Tracker被关闭，则无法找到同伴，难以完成下载。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;摆脱对Tracker服务器的依赖 -&amp;gt; 磁力链接（Magnet URI scheme），&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;eg. magnet:?xt=urn:btih:1a427c8498f72b9a27fde87662dbeb6fc043fc47&lt;/li&gt;
-  &lt;li&gt;标准格式 + 40个16进制数字。哈希值，文件ごとにunique。每个人都是小型Tracker，有动态更新的地址和文件信息。扩散开来。&lt;br /&gt;
-占用大量资源，效率低，有可能重复广播，造成广播灾难 -&amp;gt; + （逻辑）距离。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;构建DHT（分布式哈希表）网络：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;每个磁力链接：唯一的文件ID，有2 ^ (4 * 40) = 2 ^ 160种组合。&lt;/li&gt;
-  &lt;li&gt;发布文件后：可以计算知道的节点ID和这个文件ID的距离，计算出来距离最短的节点再计算它知道的节点和文件ID的距离，不断重复，直到找到与文件ID距离最短的一批节点，把下载信息存在那里。&lt;/li&gt;
-  &lt;li&gt;下载者同样。&lt;/li&gt;
-  &lt;li&gt;距离的具体计算？二叉树。下载者的ID，向上追溯，非自己的那一边的子树（不断向上，则节点不断变多），每层1个，叫做k-bucket。每个bucket都可以推算距离范围（用异或算距离，可转化成十进制方便理解，距离是连续的，毕竟算是），所以文件ID可以定位到对应的k-bucket。每个k-bucket我们实际都存了至少8个节点，即使有一个下线，也不会影响到整个网络。&lt;/li&gt;
-  &lt;li&gt;2 ^ 160足够大，够所有人用，以及多文件。&lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Sun, 21 Jul 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/network/2019/07/21/BT-torrent.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/network/2019/07/21/BT-torrent.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】为何选择31做hashCode的mod？</title>
-				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://segmentfault.com/a/1190000010799123&quot;&gt;科普：为什么 String hashCode 方法选择数字31作为乘子&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Java String类中的hashCode():&lt;/p&gt;
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hash&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;length&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// String 内部维护的一个 char 类型数组&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;31&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;];&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;hash&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;即为：s[0]*31^(n-1) + s[1]*31^(n-2) + … + s[n-1]&lt;/p&gt;
-
-&lt;p&gt;原因：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;31: 质数，不大不小。质数可以降低哈希冲突；不大不小可以不太分散（overflow），也不太集中（冲突率上升）。奇数乘法overflow不会丢失信息：偶数的话，会：* 2 相当于shifting。&lt;/li&gt;
-  &lt;li&gt;31: 可以被JVM优化：31 * i = (i « 5) - i（移位和减法）&lt;/li&gt;
-&lt;/ol&gt;
-</description>
-				<pubDate>Tue, 18 Jun 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/java/2019/06/18/hashCode-mod-choice.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/java/2019/06/18/hashCode-mod-choice.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】原码 补码 反码</title>
-				<description>&lt;h3 id=&quot;摘抄自&quot;&gt;摘抄自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/zhangziqiu/archive/2011/03/30/ComputerCode.html&quot;&gt;原码, 反码, 补码 详解&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;原码：符号位 + 真值的绝对值。正数为0，负数为1。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;比如，8位：[1111 1111, 0111 1111] -&amp;gt; [-127, 127]&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;反码：正数：本身；负数：原码符号位不变，其余各位取反&lt;/p&gt;
-
-&lt;p&gt;补码：正数：本身；负数：原码符号位不变，其余各位取反（反码），+ 1&lt;/p&gt;
-
-&lt;p&gt;为何？因为人肉眼可以识别符号位，然后直接对之后的做加减；但是计算机加减乘除运算想设计得尽量简单，所以不想辨别“符号位”，于是？让符号位也参与运算！又因为 - 正数 = + 负数，所以只需要设计加法。&lt;br /&gt;
-原码减法会错：1-1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原 = [1000 0010]原 = -2&lt;br /&gt;
-反码2个0: 1 - 1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原= [0000 0001]反 + [1111 1110]反 = [1111 1111]反 = [1000 0000]原 = -0 减法ok：真值正确，但是2个0的编码: +0和-0（[0000 0000]原和[1000 0000]原）。&lt;br /&gt;
-补码1个0，并且可以多一个数：1-1 = 1 + (-1) = [0000 0001]原 + [1000 0001]原 = [0000 0001]补 + [1111 1111]补 = [0000 0000]补=[0000 0000]原。&lt;br /&gt;
-可以用[1000 0000]表示-128&lt;br /&gt;
-(-1) + (-127) = [1000 0001]原 + [1111 1111]原 = [1111 1111]补 + [1000 0001]补 = [1000 0000]  补（因为是用多出来的补码表示的，所以没有对应的原码和反码表示：如果算回去原码，是[0000 0000]，不正确）&lt;br /&gt;
-所以，8位二进制，用原码 / 反码可以[-127, +127]，但用补码: [-128, 127]. ！正0补码表示0，负0补码表示-128！&lt;/p&gt;
-
-&lt;p&gt;因为机器使用补码, 所以对于编程中常用到的32位int类型, 可以表示范围是: [-2^31, 2^31 - 1] 因为第一位表示的是符号位.而使用补码表示时又可以多保存一个最小值.&lt;/p&gt;
-
-&lt;p&gt;同余：X，Y关于模Z同余（除以Z余数相同）&lt;br /&gt;
-负数的模？根据mod运算的数学定义： x mod y = x - y[x/y] // []表示下界&lt;br /&gt;
-eg. (-2) mod 12 = -2 - 12 * [-0.几]下界 = -2 - 12 * (-1) = 10&lt;br /&gt;
-而 10 mod 12 = 10，同余&lt;br /&gt;
-所以在一个12进制的表盘上，回拨2小时 = 往前进10小时&lt;br /&gt;
-要用正数代替负数，只要用同余数的两定理：&lt;br /&gt;
-a ≡ a (mod m) // 反身性：a和a关于m同余&lt;br /&gt;
-如果a ≡ b (mod m)，c ≡ d (mod m) 那么:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;a ± c ≡ b ± d (mod m)&lt;/li&gt;
-  &lt;li&gt;a * c ≡ b * d (mod m)&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;so:&lt;br /&gt;
-7 ≡ 7 (mod 12)&lt;br /&gt;
-(-2) ≡ 10 (mod 12)&lt;br /&gt;
-7 - 2 ≡ 7 + 10 (mod 12) (为一个负数找到了正数同余数)&lt;br /&gt;
-回到编码：&lt;br /&gt;
-2 - 1 = 2 + (-1) = [0000 0010]原 + [1000 0001]原= [0000 0010]反 + [1111 1110]反&lt;br /&gt;
-若将此[111 1110]反看作是原码，则应该是-126，移去符号位：126&lt;br /&gt;
-而有：&lt;br /&gt;
-(-1) mod 127 = 126&lt;br /&gt;
-126 mod 127 = 126&lt;br /&gt;
-即：&lt;br /&gt;
-(-1) ≡ 126 (mod 127)&lt;br /&gt;
-2-1 ≡ 2+126 (mod 127)&lt;br /&gt;
-余数相同，且正是我们希望的2 - 1 = 1&lt;br /&gt;
-=&amp;gt; 反码, 实际上是这个数对于一个模的同余数. 而这个模并不是我们的二进制, 而是所能表示的最大值! 这就和钟表一样, 转了一圈后总能找到在可表示范围内的一个正确的数值!（减去一个数，相当于加上这个数的同余数：最后到达同样的刻度，只是多走了一圈而已。这里就是溢出的符号位）&lt;br /&gt;
-2+126：相当于钟表转过了一轮, 而因为符号位是参与计算的, 正好和溢出的最高位形成正确的运算结果.&lt;br /&gt;
-反码：可以将减法变成加法&lt;/p&gt;
-
-&lt;p&gt;补码：&lt;br /&gt;
-2-1=2+(-1) = [0000 0010]原 + [1000 0001]原 = [0000 0010]补 + [1111 1111]补&lt;br /&gt;
-若将此[1111 1111]当成原码, 去除符号位, 则:&lt;br /&gt;
-[0111 1111]原 = 127&lt;br /&gt;
-为何在反码基础上+1？增加了模的值（刻度盘的size）：&lt;br /&gt;
-(-1) mod 128 = 127&lt;br /&gt;
-127 mod 128 = 127&lt;br /&gt;
-2 - 1 ≡ 2 + 127 (mod 128)&lt;br /&gt;
-（每128个刻度转一轮，补码范围：[-128, 128]，但是因为0的情况，所以取值范围是[-128, 127]）&lt;/p&gt;
-</description>
-				<pubDate>Fri, 24 May 2019 03:00:00 +0800</pubDate>
-				<link>http://localhost:4000/blog/computer/2019/05/24/true-code-complemental-code-ones-complement-code.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/computer/2019/05/24/true-code-complemental-code-ones-complement-code.html</guid>
+				<pubDate>Mon, 05 Aug 2019 12:00:00 -0700</pubDate>
+				<link>http://localhost:4000/blog/front-end/2019/08/05/JavaScript-closure.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/05/JavaScript-closure.html</guid>
 			</item>
 		
 	</channel>

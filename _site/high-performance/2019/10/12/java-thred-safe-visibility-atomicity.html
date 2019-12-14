@@ -1,0 +1,384 @@
+<style>
+  table{
+    border-left:1px solid #000000;border-top:1px solid #000000;
+    width: 100%;
+    word-wrap:break-word; word-break:break-all;
+  }
+  table th{
+  text-align:center;
+  }
+  table th,td{
+    border-right:1px solid #000000;border-bottom:1px solid #000000;
+  }
+</style>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>zxz0</title>
+	<link rel="icon" href="/blog/assets/images/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/blog/assets/js/jquery.min.js"></script>
+    <script src="/blog/assets/js/bootstrap.min.js"></script>
+    <link href="/blog/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/blog/assets/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="assets/css/font-awesome-ie7.min.css">
+    <![endif]-->
+    <!--[if lt IE 9]>
+       <script src="https://cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+       <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.js"></script>
+    <![endif]-->
+    <link href="/blog/assets/css/main.css" rel="stylesheet" type="text/css">
+
+
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="navbar navbar-custom navbar-fixed-top" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/blog/">zxz0</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    
+                    <li class="active"><a href="/blog/">Home</a></li>
+                    <li class="active"><a href="/blog/archive.html">Archive</a></li>
+                    <li class="active"><a href="/blog/categories.html">Categories</a></li>
+                    <li class="active"><a href="/blog/tags.html">Tags</a></li>
+                    <li class="active"><a href="/blog/about.html">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="wrap">
+    <div class="container container-left">
+        <div class="row">
+            <div class="col-md-3 hidden-xs">
+                
+<div class="sidebar well">
+    <header class="sidebar-header" role="banner">
+        <a href="/blog/">
+            <img src="/blog/assets/images/profile.png" style="width: 150px; height: 150px;" class="img-circle" />
+        </a>
+        <!--
+        <h3 class="title">
+        <a href="/"></a>
+        </h3>
+        -->
+    </header>
+    <div class="text-center">
+        Welcome to zxz0！
+    </div>
+</div>
+
+
+<div class="sidebar well">
+    <h1>Top Posts</h1>
+    <ul>
+        
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+                
+            
+        
+    </ul>
+</div>
+
+
+<div class="sidebar well">
+    <h1>Recent Posts</h1>
+    <ul>
+        
+          <li><a href="/blog/framework/2019/11/12/quartz-framework.html">粗观Quartz调度框架</a></li>
+        
+          <li><a href="/blog/hardware/2019/11/01/welding-related.html">焊接相关准备知识</a></li>
+        
+          <li><a href="/blog/infrastructure/2019/10/25/family-network-related.html">家庭组网相关知识</a></li>
+        
+          <li><a href="/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html">树莓派从零开始设置记录</a></li>
+        
+          <li><a href="/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html">Java线程安全之可见性和原子性</a></li>
+        
+    </ul>
+</div>
+
+<div class="sidebar well">
+    
+<h1>Links</h1>
+<ul>
+  <!-- <li><a href="#">One</a></li>
+  <li><a href="#">Two</a></li>
+  <li><a href="#">Three</a></li>
+  <li><a href="#">Four</a></li> -->
+  
+  <li>
+    <a href="http://xixia.info">
+      Xixia
+    </a>
+  </li> 
+  
+  <li>
+    <a href="https://github.com/zxixia/jekyll-xixia">
+      Jekyll-Xixia
+    </a>
+  </li> 
+  
+</ul>
+
+</div>
+
+            </div>
+            <div class="col-md-9">
+                
+<div class="well article">
+        <h2><a href="/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html">Java线程安全之可见性和原子性</a></h2>
+        <span class="post-date">
+            
+            10/12/2019
+        </span>
+        <hr style="border-top:1px solid #28323C;"/>
+    
+    <div class="post-content">
+    <p><strong>Java线程安全</strong>问题，是我们在写多线程程序的时候需要考虑的。</p>
+
+<p>具体一点来说，是当且仅当多线程有<strong>共享的变量</strong>的时候（堆内存中。堆内存：放实例字段，静态字段和数组元素。共享变量：非局部变量——比如在线程执行方法中的变量；也不是ThreadLocal声明的变量。每个线程有自己的工作内存，主要用于完成代码操作，有虚拟机栈——Java方法，本地方法栈——Native方法，程序计数器——记录当前线程执行字节码的位置。所有线程共享堆内存和方法区）。</p>
+
+<p>再具体一点，是有线程写变量，同时也有线程读或者写共享变量的时候：显而易见地，如果所有线程都只是读共享变量，并不会产生什么冲突。</p>
+
+<h3 id="可见性">可见性</h3>
+<p><strong>可见性</strong>，扩句：一个写线程的修改对其他读线程的可见。</p>
+
+<p>比如说，<strong>脏读</strong>，是没有满足可见性的情况。举例：t1将共享变量v的值从0修改成1，但是t2读的时候，读到的还是0.</p>
+
+<p><strong>造成脏读的原因</strong>：</p>
+<ul>
+  <li>CPU的缓存机制：正常数据都存在主内存（main memory），但是读写都比较慢，所以CPU做了一点优化：在CPU内使用cache，缓存部分数据。 从多线程的角度上来说，就是，每个线程可能有自己的cache，并且，不一定什么时候更新到主内存的值。对于写和读都是如此，我们无法决定CPU什么时候把值从缓存写到主内存，或者从主内存读到缓存，所以就有了滞后性，可能造成脏读。</li>
+  <li>指令重排：缓存机制造成的脏读，只是一时性的。但是指令重排（as-if-serial，重新排列指令，在单个线程结果不会改变的条件上，所以，在多线程的情况下，这种顺序改变，可能造成使用的是其他线程修改之前的值），可能造成永久性的脏读。CPU会做这种指令重排；Java编译器也会做：JIT (Just In Time)编译。Java程序的运行过程是，先被Java编译器编译成字节码文件（这里没有任何性能优化），然后被JVM解释运行，一行行的。从这个角度上来说，Java是脚本语言。但是！这样很耗时间，比如在循环之中，JIT编译器就会编译重复解释的语句以提高性能：编译完后放在方法区，下次跑的时候就不解释了，直接去拿。从这个角度上来说，Java是编译语言。总而言之，Java是两者的结合，并且，在JIT升级编译的过程中，JVM会进行上述可能产生问题的指令重排</li>
+</ul>
+
+<p><strong>Java制定的规范</strong>：Java内存模型（描述多线程程序的语义）规定了volatile关键字，需要实现：对被此关键字修饰的变量的写操作，需要对之后所有的读操作同步。这样，用volatile关键字修饰的变量，就不会产生脏读问题了：所有的读，读到的都一定是更新的写之后的数据。</p>
+
+<p><strong>JVM的实现方法</strong>：禁止CPU缓存；对volatile变量相关的指令不做指令重排（反过来说，也就是：只有指令重排影响到可见性的时候，才会禁止）。</p>
+
+<p><strong>其他的例子</strong>：读写操作扩展开来，就是：一个程序执行的操作可被其他线程感知或被其他线程直接影响。具体的例子有：Lock, Unlock；db数据修改，等等。对于所有的线程间操作，都存在可见性问题，JMM都作了规范。</p>
+
+<p><strong>重申</strong>：脏读，即是想定了，只有一个线程写，其他都是读的情况。如果有多个线程写？详见下文。</p>
+
+<h3 id="原子性">原子性</h3>
+<p><strong>原子性</strong>，意即一个操作的不可分割性——如果分割了，可能会产生失效。</p>
+
+<p>比如说，<strong>脏写</strong>。举例：t1和t2一起读了v的值：1，然后t1进行+1操作，把v的值从1变成了2，写回；t2同理，也想进行+1操作，于是把v的值从1变成了2，也写回了。这样，我们第一次的写操作就丢失了。或者说，从t1写回了的那个时间点开始，t2拿到的v的值实际上就已经失效/过期/不合法了。</p>
+
+<p><strong>Naive的解决方法</strong>：直接用synchronized保证一时间只有一个线程进行这个操作，或者用ReentrantLock在操作前后加锁、解锁，实现同样效果。但是这样的话，并发度只有1:一时间只有一个能操作。如何加速？</p>
+
+<p><strong>聪明的解决办法</strong>：有点像乐观锁的思想，就是总之先操作，然后看操作的合法性——写回的时候，如何看操作的合法性？记录变化前的旧值，和内存中的值进行比较；如果没有变化，才交换新值。这个比较和交换操作（CAS）是一个从硬件层面上保证的原子操作，所以保证了不会在这期间有冲突。如果有变化的话，则从头开始任务。如此不断循环，直到成功（自旋）。实际上，AtomicInteger的，比如incrementAndGet方法就是这么做的。</p>
+
+<p><strong>一些随之产生的问题</strong>：</p>
+<ol>
+  <li>不断循环，消耗CPU（实际上碰撞的几率不高；如果并发实在是大的话，就参照Map/Reduce的思想，多创建几个可操作的对象，减少失败率，最后sum up）；</li>
+  <li>CAS是仅针对单个变量的原子操作（虽然可以通过创建对象的方式规避）；</li>
+  <li>ABA问题：我们只比较了旧值，如果有操作多次修改而值没有改变？那我们的目标：保持共享变量的合法性，就还是没有达到（可以通过增加修改版本号的方式解决）。</li>
+</ol>
+
+    <hr style="border-top:1px solid #28323C;"/>
+
+    <!-- tags and categories under post -->
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-folder-open"></i></li>
+      
+      
+         
+            <li class="icon-style"><a href="/blog/categories.html">
+                High-Performance <span>(1)</span>
+                
+            </a></li>
+        
+      
+    </ul>
+      
+
+    
+    <ul class="list-unstyled list-inline">
+      <li><i class="icon-tags"></i></li>
+      
+      
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Thread <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Thread-safe <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Visibility <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Atomicity <span>(1)</span>
+                
+                </a>
+            </li>
+        
+      
+      
+    </ul>
+      
+
+    </div>
+    
+</div>
+<div class="pagination">
+    
+    <a class="btn btn-default" href="/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html" class="next">Newer Post</a>
+    
+    
+    <a class="btn btn-default" href="/blog/practice/2019/09/10/Gitlab-SSH-key.html" class="previous">Older Post</a>
+    
+</div>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="footer">
+    <p>&copy;2019 zxz0 , Powered by
+            
+                <a href="http://jekyllrb.com/">
+                Jekyll
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="http://getbootstrap.com/">
+                Bootstrap
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="https://github.com/">
+                Github
+                </a>
+                <!-- not the last, output a ',' -->
+                
+                ,
+                
+            
+                <a href="https://github.com/zxixia/jekyll-xixia">
+                Xixia
+                </a>
+                <!-- not the last, output a ',' -->
+                
+            
+    </p>
+</div>
+
+<!-- 
+    
+
+    
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', '', 'auto');
+    ga('send', 'pageview');
+  </script>
+
+ 
+-->
+
+</body>
+</html>
+
+</div>

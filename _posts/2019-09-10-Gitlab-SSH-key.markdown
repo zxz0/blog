@@ -108,6 +108,4 @@ description: 已有GitHub的SSH key的情况下，新增GitLab的SSH key，以�
 - [SSH原理与运用（一）：远程登录](http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html)
 - [Git连接GitLab远程仓库](https://www.cnblogs.com/gavincoder/p/10054532.html)
 - [SSH Essentials: Working with SSH Servers, Clients, and Keys](https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys)
-- [How To Configure SSH Key-Based Authentication on a Linux Server](https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server)
-- [Understanding the SSH Encryption and Connection Process](https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process)
 - [Diffie-Hellman密钥是如何交换的](https://blog.csdn.net/qq_40870418/article/details/78829769)
