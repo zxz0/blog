@@ -7,6 +7,137 @@
 		<atom:link href="http://localhost:4000/blog/feed.xml" rel="self" type="application/rss+xml" />
 		
 			<item>
+				<title>VPS初始设置</title>
+				<description>&lt;p&gt;因为打折，忍不住剁手 * 2。慢慢收拾残局。使用的CloudCone（KVM构架），操作系统CentOS 7.6（&lt;code class=&quot;highlighter-rouge&quot;&gt;cat /etc/redhat-release 	# CentOS Linux release 7.6.1810 (Core)&lt;/code&gt;）。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;修改默认的SSH端口22
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; vim /etc/ssh/ssh_config 	&lt;span class=&quot;c&quot;&gt;# for ssh&lt;/span&gt;
+ vim /etc/ssh/sshd_config	&lt;span class=&quot;c&quot;&gt;# for ssh daemon&lt;/span&gt;
+ &lt;span class=&quot;c&quot;&gt;# uncomment # Port 22, change 22 to the port you want. better [49152, 65539]&lt;/span&gt;
+ service sshd restart 		&lt;span class=&quot;c&quot;&gt;# restart sshd. now can only login thru the specified port&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;通过&lt;/p&gt;
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ssh &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; port_you_specified username@ip
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;测试登陆。
+如果系统开启了iptables防火墙，还需要设置允许指定的端口。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;创建普通用户，给予sudo权限：
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;adduser username
+passwd username
+&lt;span class=&quot;c&quot;&gt;# need to repeat twice to verify&lt;/span&gt;
+usermod &lt;span class=&quot;nt&quot;&gt;-aG&lt;/span&gt; wheel username 	&lt;span class=&quot;c&quot;&gt;# in CentOS, members of wheel group have sudo privileges&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# or gpasswd -a username wheel&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# su - username to substitute user to check&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;通过切换到用户，sudo测试，如：&lt;/p&gt;
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo ls&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-la&lt;/span&gt; /root
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;session第一次执行sudo需要输入当前用户（非root）密码&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;限制普通用户的su切换
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; vim /etc/pam.d/su 	
+ &lt;span class=&quot;c&quot;&gt;# uncomment: #auth required pam_wheel.so use_uid, so that only member in wheel group can execute su&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;这样，不属于wheel组的成员账号切换（到root）时，系统会拒绝：即使输入了正确的root密码，也会提示密码不正确&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;禁止root远程SSH登陆
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim /etc/ssh/sshd_config
+&lt;span class=&quot;c&quot;&gt;# change PermitRootLogin yes -&amp;gt; PermitRootLogin no&lt;/span&gt;
+service sshd restart
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;不影响已连接的SSH。之后需要，可以普通用户远程登录，之后su切换到root；或者sudo执行需要root权限的命令。
+往后，我们都使用新建的，有sudo权限的用户进行远程登录，以及各种常规操作。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;生成SSH Key pair，UI界面添加公钥到服务器（详见上文：&lt;a href=&quot;/blog/practice/2019/09/10/Gitlab-SSH-key.html&quot;&gt;GitLab设置SSH key，以及相关知识&lt;/a&gt;）
+    &lt;ul&gt;
+      &lt;li&gt;添加完毕后重新启动，还是不可以使用&lt;/li&gt;
+      &lt;li&gt;按照页面上的指示，SSH去机器，运行指令：
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ssh root@173.82.151.128 	&lt;span class=&quot;c&quot;&gt;# connect via SSH. since we disabled root login, we need to login as normal user, then su root&lt;/span&gt;
+curl &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; cc-ikey &lt;span class=&quot;nt&quot;&gt;-L&lt;/span&gt; web.cloudc.one/sh/key &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; sh cc-ikey some_string 	&lt;span class=&quot;c&quot;&gt;# install the ssh key&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+        &lt;p&gt;注意到在CloudCone即使有多个instance/vps，某个vps的UI界面也只有一个SSH Key。要继续添加，可以通过User / SSH Keys. \
+仔细查看cc-ikey脚本，发现就是从cloudcone数据库用给定的id拿到UI界面中的public key，放到authorized_keys最后面；根据参数，确定是否关闭root远程登录。由于脚本必须要用root用户，所以无法配置别的用户的SSH key登录。此处使用直接copy到&lt;code class=&quot;highlighter-rouge&quot;&gt;~/.ssh/authorized_keys&lt;/code&gt;的做法，手动添加SSH key到服务器。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;disable密码登录
+    &lt;ul&gt;
+      &lt;li&gt;编辑&lt;code class=&quot;highlighter-rouge&quot;&gt;/etc/ssh/sshd_config&lt;/code&gt;文件，加入/置&lt;code class=&quot;highlighter-rouge&quot;&gt;PasswordAuthentication no&lt;/code&gt;，保存&lt;/li&gt;
+      &lt;li&gt;重启ssh服务：
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;service ssh restrat 	&lt;span class=&quot;c&quot;&gt;# Ubuntu or Debian&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;service sshd restart 	&lt;span class=&quot;c&quot;&gt;# CentOS / Fedora&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;使用/开启防火墙：
+CentOS有叫做firewalld的防火墙，工具firewall-cmd可以帮助设置防火墙。基本原则：关闭所有不必要的端口。
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# yum is package management tool. usage: yum install/remove/update/list/search/info/check-update [package_name]&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl start filewalld 	&lt;span class=&quot;c&quot;&gt;# firewalld can make modification without dropping current connections&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# start adjusting policies for the default zone. When we reload out firewall, this will be the zone applied to our interfaces. (NOT TRUE! current normal user connection will freeze and throw &quot;packet_write_wait: Connection to ip_address port ssh_port: Broken pipe&quot; somehow. I opened a root user session, not evicted somehow. maybe need to config this before change default ssh port? next time see if it crash when 2 normal user session are available)&lt;/span&gt;
+systemctl status firewalld 	&lt;span class=&quot;c&quot;&gt;# see current firewall status&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--permanent&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-service&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;ssh 	&lt;span class=&quot;c&quot;&gt;# add ssh service. --permanent will save the change to config file&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--permanent&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--add-port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;valid_port/tcp 	&lt;span class=&quot;c&quot;&gt;# if the default SSH port (22) changed&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# can add other services here, eg. http, https (the corresponding default port will be automatically added)&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--permanent&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--list-all&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# see config in file&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--list-all&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# see current loaded config&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--reload&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# reload with new config file, apply the changes&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;firewall-cmd &lt;span class=&quot;nt&quot;&gt;--query-port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;61187/tcp 	&lt;span class=&quot;c&quot;&gt;# test the port is open&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;firewalld 	&lt;span class=&quot;c&quot;&gt;# start firewall at boot&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;设置时间同步
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;timedatectl list-timezones 	&lt;span class=&quot;c&quot;&gt;# to list all. space and b to page down/up, q to exit&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;timedatectl set-timezone region/timezone 	&lt;span class=&quot;c&quot;&gt;# set the right one with server&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;timedatectl 	&lt;span class=&quot;c&quot;&gt;# confirm the updated timezone&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;ntp 	&lt;span class=&quot;c&quot;&gt;# Network Time Protocol (NTP) synchronization.&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl start ntpd 	&lt;span class=&quot;c&quot;&gt;# start service for current session&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;ntpd 	&lt;span class=&quot;c&quot;&gt;# start service at boot&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;添加swap file：
+当RAM不够的时候，Linux会把释放的空间临时保存到Swap空间中。虚拟内存。如果RAM不够大，或者不想应用crash，就用。尤其推荐db使用。
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;free &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# see how much we have for swap &lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;fallocate &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; 4G /swapfile 	&lt;span class=&quot;c&quot;&gt;# can set 1:1 to RAM&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo chmod &lt;/span&gt;600 /swapfile	&lt;span class=&quot;c&quot;&gt;# don't let other users to see the content&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;mkswap /swapfile 	&lt;span class=&quot;c&quot;&gt;# tell the system to format the file for swap&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;swapon /swapfile 	&lt;span class=&quot;c&quot;&gt;# tell the system it can use the swap file for current session&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;sh &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'echo &quot;/swapfile none swap sw 0 0&quot; &amp;gt;&amp;gt; /etc/fstab'&lt;/span&gt; 	&lt;span class=&quot;c&quot;&gt;# modify the system file to do it automatically at boot&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;hr /&gt;
+    &lt;h4 id=&quot;参考资料&quot;&gt;参考资料：&lt;/h4&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;https://mp.weixin.qq.com/s/MQqasjPs4Y-OCjQLuFj4ew&quot;&gt;手把手教你怎么使用云服务器&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-configure-ssh-key-based-authentication-on-a-linux-server&quot;&gt;How To Configure SSH Key-Based Authentication on a Linux Server&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://stackoverflow.com/questions/10268583/downloading-java-jdk-on-linux-via-wget-is-shown-license-page-instead&quot;&gt;Downloading Java JDK on Linux via wget is shown license page instead&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://stackoverflow.com/questions/44213454/not-able-to-install-oracle-jdk-on-centos-machine-using-wget&quot;&gt;Not able to install oracle jdk on CentOS machine using wget&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://askubuntu.com/questions/29079/how-do-i-provide-a-username-and-password-to-wget&quot;&gt;How do I provide a username and password to wget?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/luck_zz/article/details/80348592&quot;&gt;Linux下载及安装jdk1.8&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;http://www.linuxfromscratch.org/blfs/view/svn/postlfs/profile.html&quot;&gt;The Bash Shell Startup Files&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://stackoverflow.com/questions/10117943/what-is-the-good-way-of-setting-java-home-system-wide-in-linux-etc-profile-or&quot;&gt;What is the good way of setting JAVA_HOME system wide in Linux? /etc/profile or /etc/profile.d/custom.sh?&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://juejin.im/post/5ce67fa1f265da1b6a346d16&quot;&gt;Java开发环境不再需要配置classpath！&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/tianlesoftware/article/details/6201898&quot;&gt;Linux 修改SSH端口 和 禁止Root远程登陆&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://blog.51cto.com/yttitan/1568305&quot;&gt;网络安全系列之十三 Linux中su与sudo的安全设置&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/how-to-create-a-sudo-user-on-centos-quickstart&quot;&gt;How To Create a Sudo User on CentOS [Quickstart]&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/initial-server-setup-with-centos-7&quot;&gt;Initial Server Setup with CentOS 7&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/additional-recommended-steps-for-new-centos-7-servers&quot;&gt;Additional Recommended Steps for New CentOS 7 Servers&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.tecmint.com/20-linux-yum-yellowdog-updater-modified-commands-for-package-mangement/&quot;&gt;20 Linux YUM (Yellowdog Updater, Modified) Commands for Package Management&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://sebastianblade.com/how-to-modify-ssh-port-in-centos7/&quot;&gt;怎样修改 CentOS 7 SSH 端口&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.liquidweb.com/kb/an-introduction-to-firewalld/&quot;&gt;An Introduction to Firewalld&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/kerrycode/p/5246383.html&quot;&gt;Swap交换分区概念&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/stulzq/p/9808504.html&quot;&gt;Centos7 防火墙 firewalld 实用操作&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+</description>
+				<pubDate>Sat, 14 Dec 2019 09:30:00 -0800</pubDate>
+				<link>http://localhost:4000/blog/o&m/2019/12/14/VPS-initialization.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/o&m/2019/12/14/VPS-initialization.html</guid>
+			</item>
+		
+			<item>
 				<title>粗观Quartz调度框架</title>
 				<description>&lt;p&gt;有段Quartz有关的代码需要维护，做了一点research&lt;/p&gt;
 
@@ -29,9 +160,9 @@ Trigger也想传一些信息？Trigger也有JobDataMap。&lt;br /&gt;
 
 &lt;p&gt;总之，因为是在一个application内的，所以如果有集群，要么就关掉其他的只剩下一个，要么就用消息中间件。&lt;/p&gt;
 </description>
-				<pubDate>Tue, 12 Nov 2019 23:00:00 -0800</pubDate>
-				<link>http://localhost:4000/blog/framework/2019/11/12/quartz-framework.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/framework/2019/11/12/quartz-framework.html</guid>
+				<pubDate>Wed, 13 Nov 2019 12:00:00 -0800</pubDate>
+				<link>http://localhost:4000/blog/framework/2019/11/13/quartz-framework.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/framework/2019/11/13/quartz-framework.html</guid>
 			</item>
 		
 			<item>
@@ -578,8 +709,8 @@ Trigger也想传一些信息？Trigger也有JobDataMap。&lt;br /&gt;
 &lt;/ul&gt;
 </description>
 				<pubDate>Fri, 25 Oct 2019 20:47:00 -0700</pubDate>
-				<link>http://localhost:4000/blog/infrastructure/2019/10/25/family-network-related.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/infrastructure/2019/10/25/family-network-related.html</guid>
+				<link>http://localhost:4000/blog/network/2019/10/25/home-network-system-related.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/network/2019/10/25/home-network-system-related.html</guid>
 			</item>
 		
 			<item>
@@ -854,15 +985,16 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
 （因为是Mac，所以预装了OpenSSH client。Windows得先装这个再进行以下操作）&lt;/p&gt;
 &lt;ol&gt;
   &lt;li&gt;生成SSH key：
-    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ssh-keygen &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; ed25519 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email&quot;&lt;/span&gt;
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;ssh-keygen &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; ed25519 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email, ...&quot;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
     &lt;ul&gt;
       &lt;li&gt;ed25519这个数字签名算法是最安全，performance最好的（验证、签名、key生成的速度都快，签名公钥都很小）。如果server支持就用尽量这个。&lt;/li&gt;
       &lt;li&gt;默认且最常用的是RSA。推荐加上-b 4096参数生成4096 bits的key；旧的RSA不安全（仅一轮MD5 hash），推荐在6.5版本之后，加上-o用新方法encode。
-        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ssh-keygen &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; rsa &lt;span class=&quot;nt&quot;&gt;-b&lt;/span&gt; 4096 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email&quot;&lt;/span&gt;
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  ssh-keygen &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; rsa &lt;span class=&quot;nt&quot;&gt;-b&lt;/span&gt; 4096 &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;注册用的email, ...&quot;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
       &lt;/li&gt;
-      &lt;li&gt;-C 参数是comment，可不写&lt;/li&gt;
+      &lt;li&gt;-C 参数是comment，可不写。可以是本机信息，因为注释会包含在最后的公钥中。&lt;/li&gt;
+      &lt;li&gt;-f 参数指定file name&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;在被保存SSH key的file的时候，不要用之前GitHub重复的文件（或者说，任何已有的SSH key的文件，否则之前的就会被覆盖 or 退出）。
@@ -876,6 +1008,12 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
     &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;eval&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ssh-agent &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
  ssh-add ~/.ssh/new_ssh_key
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ul&gt;
+      &lt;li&gt;如果没有设置passphrase，可以省略这一步；如果有passphrase而省略这一步，每次连接都会询问passphrase。&lt;/li&gt;
+      &lt;li&gt;ssh-agent创建socket，等待SSH connections。用户只需输入一次passphrase，之后ssh-agent会处理一切。&lt;/li&gt;
+      &lt;li&gt;如果需要删除，使用&lt;code class=&quot;highlighter-rouge&quot;&gt;ssh-add -D ~/.ssh/new_ssh_key&lt;/code&gt;，只对手动加入的有效&lt;/li&gt;
+      &lt;li&gt;如果不指定文件，就是加入默认文件夹：.ssh下的所有available keys&lt;/li&gt;
+    &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;创建/修改配置文件，保证本机能够根据host选择对应的私钥：
     &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; vim ~/.ssh/config
@@ -891,7 +1029,10 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
    IdentityFile ~/.ssh/new_ssh_key
  &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;esc + : + wq&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;如果之前有使用密码保护私钥，可以用UseKeychain yes设置直接使用keychain，从而不用每次都输passphrase。&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;如果之前有使用密码保护私钥，可以用&lt;code class=&quot;highlighter-rouge&quot;&gt;UseKeychain yes&lt;/code&gt;将passphrases都存在Keychain中&lt;/li&gt;
+      &lt;li&gt;如果是macOS Sierra 10.12.2及以上版本的，可以直接指定&lt;code class=&quot;highlighter-rouge&quot;&gt;AddKeysToAgent yes&lt;/code&gt;从而省略上一步（ssh-agent）的手动配置&lt;/li&gt;
+    &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;复制公钥到剪切板：
     &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; pbcopy &amp;lt; ~/.ssh/new_ssh_key.pub
@@ -904,6 +1045,27 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
     &lt;ul&gt;
       &lt;li&gt;大概有可以用的图形界面（GitLab: setting - SSH Keys - Key）&lt;/li&gt;
       &lt;li&gt;如果生成的时候用了-C，那么注释会出现在Title下。如果没有？写个好辨认的title，比如，home，或者Work Laptop。&lt;/li&gt;
+      &lt;li&gt;如果没有，需要手动添加，则：
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; ssh-copy-id &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; identity_file username@remote_host
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+        &lt;ul&gt;
+          &lt;li&gt;需要输入远程用户登陆密码&lt;/li&gt;
+          &lt;li&gt;命令完成后，公钥就会被放到remote account的~/.ssh文件夹下，名为authorized_keys&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;如果没有，可以使用&lt;code class=&quot;highlighter-rouge&quot;&gt;cat ~/.ssh/id_rsa.pub | ssh username@remote_host &quot;mkdir -p ~/.ssh &amp;amp;&amp;amp; cat &amp;gt;&amp;gt; ~/.ssh/authorized_keys&quot;&lt;/code&gt;替代（显示，管道，如果不存在则创建文件夹，加在文件最后）&lt;/li&gt;
+      &lt;li&gt;或者可以手动复制：
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; ~/.ssh/id_rsa.pub
+ &lt;span class=&quot;c&quot;&gt;# log in to remote server&lt;/span&gt;
+ &lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; ~/.ssh
+ &lt;span class=&quot;nb&quot;&gt;echo &lt;/span&gt;public_key_string &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; ~/.ssh/authorized_keys
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+      &lt;li&gt;完了之后，为了安全，可以设置文件夹为仅当前用户读写执行，文件为仅当前用户读写：
+        &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;chmod &lt;/span&gt;600 ~/.ssh/authorized_keys
+ &lt;span class=&quot;nb&quot;&gt;chmod &lt;/span&gt;700 ~/.ssh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;验证一下之前的SSH key没有被破坏（此处是GitHub），以及新的SSH key是否添加成功
@@ -984,6 +1146,9 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
   &lt;li&gt;&lt;a href=&quot;https://www.cnblogs.com/gavincoder/p/10054532.html&quot;&gt;Git连接GitLab远程仓库&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys&quot;&gt;SSH Essentials: Working with SSH Servers, Clients, and Keys&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://blog.csdn.net/qq_40870418/article/details/78829769&quot;&gt;Diffie-Hellman密钥是如何交换的&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://unix.stackexchange.com/questions/72552/whats-the-purpose-of-ssh-agent&quot;&gt;what’s the purpose of ssh-agent?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://stackoverflow.com/questions/25464930/how-to-remove-an-ssh-key&quot;&gt;How to remove an ssh key?&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://medium.com/risan/upgrade-your-ssh-key-to-ed25519-c6e8d60d3c54&quot;&gt;Upgrade Your SSH Key to Ed25519&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
 				<pubDate>Tue, 10 Sep 2019 10:42:00 -0700</pubDate>
@@ -1169,157 +1334,8 @@ ALLOWED_HOSTS &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quo
 &lt;/ul&gt;
 </description>
 				<pubDate>Thu, 08 Aug 2019 12:00:00 -0700</pubDate>
-				<link>http://localhost:4000/blog/architects/2019/08/08/CDN.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/architects/2019/08/08/CDN.html</guid>
-			</item>
-		
-			<item>
-				<title>【转】JavaScript Closure</title>
-				<description>&lt;h3 id=&quot;总结自&quot;&gt;总结自：&lt;/h3&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.freecodecamp.org/news/learn-javascript-closures-in-n-minutes/&quot;&gt;Learn JavaScript Closures in 6 Minutes&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://www.imooc.com/read/38/article/478&quot;&gt;JavaScript设计模式精讲 - 03 闭包与高阶函数&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;JS支持first-class functions：和其他所有value一样对待，比如strings，numbers还有objects。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;可以作为variables，可以在arrays中，可以被function return&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;重点：可以被function return！！&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;eg.
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'Hi, Jerome!'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;要call里面的那个函数，就需要：&lt;code class=&quot;highlighter-rouge&quot;&gt;getGreeter()(); // 第一个call拿到function，第二个call运行&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;可以放到variable里面：
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;greetJerome&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;greetJerome&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;-&amp;gt; (写活之后)&lt;/p&gt;
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;// We can greet anyone now!&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// outer function takes name&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`Hi, &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;!`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// inner function uses it later&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;greetYazeed&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getGreeter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Yazeed'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;greetYazeed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// Hi, Jerome!&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-  &lt;li&gt;当一个函数返回的时候，它的lifecycle就complete了，无法再做任何操作，并且local variables会被清理。除非！！它返回另外一个函数。如果是这样，那么这个返回的函数仍可以access outer variables，即使after the parent passes on.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;好处：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Data Privacy: 安全分享代码。外部者无法maliciously manipulate inner variables。像Java、C++就会有private fields，从class外不可access，所以privacy；JS没有，但是有closure。所以我们可以在outer function内定义一些参数，然后在retured的inner function中使用，而不暴露给外界知道。外界也无法直接access它了，只能通过现成的API。&lt;/li&gt;
-  &lt;li&gt;Currying. 函数一次拿到一个argument:
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
- &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-     &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
- &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;add10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 30&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-    &lt;p&gt;用于：”preload” a function’s arguments for easier reuse. &lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;React会用到。比如去年出的hooks, 其中最confuing的，useEffect，依赖于closures。&lt;br /&gt;
-eg.
-    &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-   &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;username&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'yazeedb'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-   &lt;span class=&quot;nx&quot;&gt;React&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;useEffect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-       &lt;span class=&quot;nx&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`https://api.github.com/users/&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//username是在outer function中定义的，但是在这个inner function中用到了&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;json&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
-       &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;then&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-   &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
-	  
-   &lt;span class=&quot;c1&quot;&gt;// blah blah blah&lt;/span&gt;
- &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;总结：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;Functions are values, too.&lt;/li&gt;
-  &lt;li&gt;Functions can return other functions.&lt;/li&gt;
-  &lt;li&gt;An outer function’s variables are still accessible to its inner function, even after the outer has passed on.&lt;/li&gt;
-  &lt;li&gt;Those variables are also known as state.&lt;/li&gt;
-  &lt;li&gt;Therefore, closures can also be called stateful functions.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;闭包实现结果缓存（备忘模式）：&lt;/p&gt;
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* 备忘函数 */&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;prototype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;slice&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kr&quot;&gt;arguments&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// change Arguments to an array&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 函数参数序列化成字符串当作索引change to a string like: [arg]&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// get value, of run function (with array arguments, and fn as this environment)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;或者使用ES6实现：&lt;/p&gt;
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;JSON&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;cache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;fn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;使用方法：&lt;/p&gt;
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/* 复杂计算函数 */&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;memorize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 2    当前: cache: { '[1]': 2 }&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 2    当前: cache: { '[1]': 2 }&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;adder&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;// 输出: 3    当前: cache: { '[1]': 2, '[2]': 3 }&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;可以有的改进：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;只存最新的&lt;/li&gt;
-  &lt;li&gt;缓存持久化：cookies, localStorage等&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;注意：不可以是Map：键是使用===比较的，如果引用类型（可变，eg. 数组）则会出错&lt;/p&gt;
-
-&lt;p&gt;高阶函数：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;函数作为参数：回调函数。
-    &lt;ul&gt;
-      &lt;li&gt;eg. Vue或者React等框架里面的hook:
-        &lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// some operations&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
-      &lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;函数作为返回值：
-    &lt;ul&gt;
-      &lt;li&gt;一个函数内部输出另一个函数&lt;/li&gt;
-      &lt;li&gt;利用闭包保持作用域&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-</description>
-				<pubDate>Mon, 05 Aug 2019 12:00:00 -0700</pubDate>
-				<link>http://localhost:4000/blog/front-end/2019/08/05/JavaScript-closure.html</link>
-				<guid isPermaLink="true">http://localhost:4000/blog/front-end/2019/08/05/JavaScript-closure.html</guid>
+				<link>http://localhost:4000/blog/high-performance/2019/08/08/CDN.html</link>
+				<guid isPermaLink="true">http://localhost:4000/blog/high-performance/2019/08/08/CDN.html</guid>
 			</item>
 		
 	</channel>

@@ -152,6 +152,8 @@
             
                 
             
+                
+            
         
     </ul>
 </div>
@@ -161,15 +163,15 @@
     <h1>Recent Posts</h1>
     <ul>
         
-          <li><a href="/blog/framework/2019/11/12/quartz-framework.html">粗观Quartz调度框架</a></li>
+          <li><a href="/blog/o&m/2019/12/14/VPS-initialization.html">VPS初始设置</a></li>
+        
+          <li><a href="/blog/framework/2019/11/13/quartz-framework.html">粗观Quartz调度框架</a></li>
         
           <li><a href="/blog/hardware/2019/11/01/welding-related.html">焊接相关准备知识</a></li>
         
-          <li><a href="/blog/infrastructure/2019/10/25/family-network-related.html">家庭组网相关知识</a></li>
+          <li><a href="/blog/network/2019/10/25/home-network-system-related.html">家庭组网相关知识</a></li>
         
           <li><a href="/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html">树莓派从零开始设置记录</a></li>
-        
-          <li><a href="/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html">Java线程安全之可见性和原子性</a></li>
         
     </ul>
 </div>
@@ -216,15 +218,16 @@
 （因为是Mac，所以预装了OpenSSH client。Windows得先装这个再进行以下操作）</p>
 <ol>
   <li>生成SSH key：
-    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-C</span> <span class="s2">"注册用的email"</span>
+    <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nv">$ </span>ssh-keygen <span class="nt">-t</span> ed25519 <span class="nt">-C</span> <span class="s2">"注册用的email, ..."</span>
 </code></pre></div>    </div>
     <ul>
       <li>ed25519这个数字签名算法是最安全，performance最好的（验证、签名、key生成的速度都快，签名公钥都很小）。如果server支持就用尽量这个。</li>
       <li>默认且最常用的是RSA。推荐加上-b 4096参数生成4096 bits的key；旧的RSA不安全（仅一轮MD5 hash），推荐在6.5版本之后，加上-o用新方法encode。
-        <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  ssh-keygen <span class="nt">-o</span> <span class="nt">-t</span> rsa <span class="nt">-b</span> 4096 <span class="nt">-C</span> <span class="s2">"注册用的email"</span>
+        <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  ssh-keygen <span class="nt">-o</span> <span class="nt">-t</span> rsa <span class="nt">-b</span> 4096 <span class="nt">-C</span> <span class="s2">"注册用的email, ..."</span>
 </code></pre></div>        </div>
       </li>
-      <li>-C 参数是comment，可不写</li>
+      <li>-C 参数是comment，可不写。可以是本机信息，因为注释会包含在最后的公钥中。</li>
+      <li>-f 参数指定file name</li>
     </ul>
   </li>
   <li>在被保存SSH key的file的时候，不要用之前GitHub重复的文件（或者说，任何已有的SSH key的文件，否则之前的就会被覆盖 or 退出）。
@@ -238,6 +241,12 @@
     <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">eval</span> <span class="k">$(</span>ssh-agent <span class="nt">-s</span><span class="k">)</span>
  ssh-add ~/.ssh/new_ssh_key
 </code></pre></div>    </div>
+    <ul>
+      <li>如果没有设置passphrase，可以省略这一步；如果有passphrase而省略这一步，每次连接都会询问passphrase。</li>
+      <li>ssh-agent创建socket，等待SSH connections。用户只需输入一次passphrase，之后ssh-agent会处理一切。</li>
+      <li>如果需要删除，使用<code class="highlighter-rouge">ssh-add -D ~/.ssh/new_ssh_key</code>，只对手动加入的有效</li>
+      <li>如果不指定文件，就是加入默认文件夹：.ssh下的所有available keys</li>
+    </ul>
   </li>
   <li>创建/修改配置文件，保证本机能够根据host选择对应的私钥：
     <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> vim ~/.ssh/config
@@ -253,7 +262,10 @@
    IdentityFile ~/.ssh/new_ssh_key
  <span class="o">(</span>esc + : + wq<span class="o">)</span>
 </code></pre></div>    </div>
-    <p>如果之前有使用密码保护私钥，可以用UseKeychain yes设置直接使用keychain，从而不用每次都输passphrase。</p>
+    <ul>
+      <li>如果之前有使用密码保护私钥，可以用<code class="highlighter-rouge">UseKeychain yes</code>将passphrases都存在Keychain中</li>
+      <li>如果是macOS Sierra 10.12.2及以上版本的，可以直接指定<code class="highlighter-rouge">AddKeysToAgent yes</code>从而省略上一步（ssh-agent）的手动配置</li>
+    </ul>
   </li>
   <li>复制公钥到剪切板：
     <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> pbcopy &lt; ~/.ssh/new_ssh_key.pub
@@ -266,6 +278,27 @@
     <ul>
       <li>大概有可以用的图形界面（GitLab: setting - SSH Keys - Key）</li>
       <li>如果生成的时候用了-C，那么注释会出现在Title下。如果没有？写个好辨认的title，比如，home，或者Work Laptop。</li>
+      <li>如果没有，需要手动添加，则：
+        <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ssh-copy-id <span class="nt">-i</span> identity_file username@remote_host
+</code></pre></div>        </div>
+        <ul>
+          <li>需要输入远程用户登陆密码</li>
+          <li>命令完成后，公钥就会被放到remote account的~/.ssh文件夹下，名为authorized_keys</li>
+        </ul>
+      </li>
+      <li>如果没有，可以使用<code class="highlighter-rouge">cat ~/.ssh/id_rsa.pub | ssh username@remote_host "mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys"</code>替代（显示，管道，如果不存在则创建文件夹，加在文件最后）</li>
+      <li>或者可以手动复制：
+        <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">cat</span> ~/.ssh/id_rsa.pub
+ <span class="c"># log in to remote server</span>
+ <span class="nb">mkdir</span> <span class="nt">-p</span> ~/.ssh
+ <span class="nb">echo </span>public_key_string <span class="o">&gt;&gt;</span> ~/.ssh/authorized_keys
+</code></pre></div>        </div>
+      </li>
+      <li>完了之后，为了安全，可以设置文件夹为仅当前用户读写执行，文件为仅当前用户读写：
+        <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">chmod </span>600 ~/.ssh/authorized_keys
+ <span class="nb">chmod </span>700 ~/.ssh
+</code></pre></div>        </div>
+      </li>
     </ul>
   </li>
   <li>验证一下之前的SSH key没有被破坏（此处是GitHub），以及新的SSH key是否添加成功
@@ -346,6 +379,9 @@
   <li><a href="https://www.cnblogs.com/gavincoder/p/10054532.html">Git连接GitLab远程仓库</a></li>
   <li><a href="https://www.digitalocean.com/community/tutorials/ssh-essentials-working-with-ssh-servers-clients-and-keys">SSH Essentials: Working with SSH Servers, Clients, and Keys</a></li>
   <li><a href="https://blog.csdn.net/qq_40870418/article/details/78829769">Diffie-Hellman密钥是如何交换的</a></li>
+  <li><a href="https://unix.stackexchange.com/questions/72552/whats-the-purpose-of-ssh-agent">what’s the purpose of ssh-agent?</a></li>
+  <li><a href="https://stackoverflow.com/questions/25464930/how-to-remove-an-ssh-key">How to remove an ssh key?</a></li>
+  <li><a href="https://medium.com/risan/upgrade-your-ssh-key-to-ed25519-c6e8d60d3c54">Upgrade Your SSH Key to Ed25519</a></li>
 </ul>
 
     <hr style="border-top:1px solid #28323C;"/>
@@ -374,7 +410,7 @@
          
             <li class="icon-style">
                 <a href="/blog/tags.html">
-                Security <span>(4)</span>
+                Security <span>(5)</span>
                 ,
                 </a>
             </li>

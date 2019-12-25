@@ -152,6 +152,8 @@
             
                 
             
+                
+            
         
     </ul>
 </div>
@@ -161,15 +163,15 @@
     <h1>Recent Posts</h1>
     <ul>
         
-          <li><a href="/blog/framework/2019/11/12/quartz-framework.html">粗观Quartz调度框架</a></li>
+          <li><a href="/blog/o&m/2019/12/14/VPS-initialization.html">VPS初始设置</a></li>
+        
+          <li><a href="/blog/framework/2019/11/13/quartz-framework.html">粗观Quartz调度框架</a></li>
         
           <li><a href="/blog/hardware/2019/11/01/welding-related.html">焊接相关准备知识</a></li>
         
-          <li><a href="/blog/infrastructure/2019/10/25/family-network-related.html">家庭组网相关知识</a></li>
+          <li><a href="/blog/network/2019/10/25/home-network-system-related.html">家庭组网相关知识</a></li>
         
           <li><a href="/blog/infrastructure/2019/10/20/rasepberry-pi-server-set-up.html">树莓派从零开始设置记录</a></li>
-        
-          <li><a href="/blog/high-performance/2019/10/12/java-thred-safe-visibility-atomicity.html">Java线程安全之可见性和原子性</a></li>
         
     </ul>
 </div>
@@ -203,34 +205,21 @@
             <div class="col-md-9">
                 
 <div class="well article">
-        <h2><a href="/blog/framework/2019/11/12/quartz-framework.html">粗观Quartz调度框架</a></h2>
+        <h2><a href="/blog/o&m/2018/11/05/Windows-server-under-router.html">家用路由器下Windows系统主机做服务器</a></h2>
         <span class="post-date">
             
-            11/12/2019
+            11/05/2018
         </span>
         <hr style="border-top:1px solid #28323C;"/>
     
     <div class="post-content">
-    <p>有段Quartz有关的代码需要维护，做了一点research</p>
-
-<ul>
-  <li>JobDetail，是Job信息的抽象</li>
-  <li>Trigger，是触发器，很好理解</li>
-  <li>Job，则是具体的job，execute()之中的方法是干实事（business logic）的</li>
-</ul>
-
-<p>一个Job可以有很多trigger，一个trigger只能trigger一个job，这种松耦合，给予了scheduler很大的灵活性。</p>
-
-<p>具体机制：当事件被触发的时候，Job就会被instantiate，然后执行execute()方法。也就是说，Job是stateless的。这样就带来的一个问题，Job可能要用到的数据该存在哪里？别慌，有JobDataMap，在JobDetail里面。<br />
-Trigger也想传一些信息？Trigger也有JobDataMap。<br />
-这个Map，就是JDK的Map接口的一个实现。</p>
-
-<p>至于Job在execute里面如何access这些信息？execute方法，重载的execute方法有一个参数是context，里面可以拿到包括JobDetail，Trigger等等的一系列相关信息。</p>
-
-<p>scheduler本身，去scheduler job的时候，必须有JobDetail和Trigger。<br />
-定义JobDetail和Trigger的时候，要指定name和group，这个(name, group)的组合要是unique的。</p>
-
-<p>总之，因为是在一个application内的，所以如果有集群，要么就关掉其他的只剩下一个，要么就用消息中间件。</p>
+    <ol>
+  <li>绑定内网ip（参考路由器指南）</li>
+  <li>设置端口转发（参考路由器指南）</li>
+  <li>目标主机上运行服务器（参考具体语言/框架/项目指南）</li>
+  <li>Windows防火墙设置（添加出入allow规则，注意和已有规则的冲突：如果一个服务被block且allow，最终会被block）
+注：路由器默认设置为禁止ping</li>
+</ol>
 
     <hr style="border-top:1px solid #28323C;"/>
 
@@ -242,7 +231,7 @@ Trigger也想传一些信息？Trigger也有JobDataMap。<br />
       
          
             <li class="icon-style"><a href="/blog/categories.html">
-                Framework <span>(1)</span>
+                O&M <span>(2)</span>
                 
             </a></li>
         
@@ -258,14 +247,35 @@ Trigger也想传一些信息？Trigger也有JobDataMap。<br />
          
             <li class="icon-style">
                 <a href="/blog/tags.html">
-                Quartz <span>(1)</span>
+                Windows <span>(1)</span>
                 ,
                 </a>
             </li>
          
             <li class="icon-style">
                 <a href="/blog/tags.html">
-                Scheduler <span>(1)</span>
+                Server <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                PC <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Router <span>(1)</span>
+                ,
+                </a>
+            </li>
+         
+            <li class="icon-style">
+                <a href="/blog/tags.html">
+                Ops <span>(4)</span>
                 
                 </a>
             </li>
@@ -280,8 +290,10 @@ Trigger也想传一些信息？Trigger也有JobDataMap。<br />
 </div>
 <div class="pagination">
     
+    <a class="btn btn-default" href="/blog/python/2019/02/01/Python-class-member-default-value.html" class="next">Newer Post</a>
     
-    <a class="btn btn-default" href="/blog/hardware/2019/11/01/welding-related.html" class="previous">Older Post</a>
+    
+    <a class="btn btn-default" href="/blog/python/2017/11/08/Python-scope.html" class="previous">Older Post</a>
     
 </div>
             </div>

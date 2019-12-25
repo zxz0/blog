@@ -2,8 +2,8 @@
 layout: post
 title:  "家庭组网相关知识"
 date:   2019-10-26 11:47:00 +0800
-categories: Infrastructure
-tags: Infrastructure Network Practice
+categories: Network
+tags: Network Practice Architecture
 description: 想在理解现行的家庭网络结构的基础上扩展Wi-Fi信号，增加一个内网专用服务器（像公司的一样，一些服务可以通过域名在内网访问，但是同时需要enable从外网ssh。为了安全，想要disable与内网其他部分的连接if possible），本文是总结为此所做的research
 ---
 

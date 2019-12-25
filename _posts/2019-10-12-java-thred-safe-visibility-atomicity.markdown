@@ -2,8 +2,8 @@
 layout: post
 title:  "Java线程安全之可见性和原子性"
 date:   2019-10-12 18:43:43 -0700
-categories: High-Performance
-tags: Thread Thread-safe Visibility Atomicity
+categories: Java
+tags: Thread Thread-safe Visibility Atomicity High-Performance
 description: 从可见性和原子性两方面展开，解析Java线程安全问题
 ---
 

@@ -2,8 +2,8 @@
 layout: post
 title:  "【转】CDN内容分发网络"
 date:   2019-08-08 12:00:00 -0700
-categories: Architects
-tags: CDN Architects
+categories: High-Performance
+tags: CDN Infrastructure
 description: CDN相关概念，实现
 ---
 ### 摘抄自：

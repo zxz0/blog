@@ -2,7 +2,7 @@
 layout: post
 title:  "家用路由器下Windows系统主机做服务器"
 date:   2018-11-06 06:08:10 +0800
-categories: Ops
+categories: O&M
 tags: Windows Server PC Router Ops
 description: 配置通过路由器连接到ISP的PC作为服务器
 ---
